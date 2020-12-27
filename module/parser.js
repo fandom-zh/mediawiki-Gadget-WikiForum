@@ -32,15 +32,15 @@ function parseThreads(forum, prefix = '') {
   var threads = []
   $threads = getThreads($forum)
   $.each($threads, (index, thread) => {
-    var thread = {
+    var threadObj = {
       id: String(prefix + (index + 1)),
       content: getContent(thread),
       meta: getMeta(thread),
     }
     if (getThreads(thread).length > 0) {
-      thread.threads = parseThreads(thread, thread.id)
+      threadObj.threads = parseThreads(thread, threadObj.id)
     }
-    threads.push(thread)
+    threads.push(threadObj)
   })
   return threads
 }
