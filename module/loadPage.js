@@ -1,4 +1,4 @@
-const { apiParser } = require('./parser')
+const { fromApi } = require('./parser')
 const getSource = require('./getSource')
 const { util } = require('./mw')
 const log = require('./log')
@@ -8,7 +8,7 @@ module.exports = (page = util.wgPageName) => {
   getSource(page).then(
     data => {
       log.info('Page data ready', page)
-      var Obj = apiParser(data)
+      var Obj = fromApi(data)
       var ret = {}
       ret[page] = Obj
       mw.hook('WikiForum.render').fire(ret)

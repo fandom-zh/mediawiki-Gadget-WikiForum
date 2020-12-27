@@ -6,7 +6,7 @@ module.exports = () => {
   var ns = window.WikiForum.ns || []
   if (ns.includes(conf.wgNamespaceNumber)) {
     log.info('Is Forum NS')
-    loadPage(page)
+    loadPage(conf.wgPageName)
   } else {
     log.info('Not Forum NS')
   }

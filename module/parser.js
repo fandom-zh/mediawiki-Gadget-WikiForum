@@ -115,11 +115,17 @@ function fromApi(data) {
     $html = $html.find('> .mw-parser-output')
   }
 
-  // 缓存全部forum
-  window.cache.pages[title] = {
+  var Obj = {
     wikitext: parseForums($wikitext, title),
     html: parseForums($html, title),
   }
+
+  // 缓存全部forum
+  window.WikiForum = window.WikiForum || {}
+  window.WikiForum.cache = window.WikiForum.cache || {}
+  window.WikiForum.cache.pages = window.WikiForum.cache.pages || {}
+  window.WikiForum.cache.pages[title] = Obj
+  return Obj
 }
 
 /**
