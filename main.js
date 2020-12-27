@@ -65,7 +65,7 @@
       })
       .then(function(data) {
         var $wikitext = $('<div>' + data.parse.wikitext['*'] + '</div>')
-        var $html = $('<div>' + data.parse.text['*'] + '</div>')
+        var $html = $(data.parse.text['*'])
 
         function parseStruc(obj, prefix) {
           if (prefix) {
