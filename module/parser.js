@@ -60,7 +60,7 @@ function getThreads(thread) {
  */
 function getContent(thread) {
   var $thread = $(thread)
-  var $content = $thread.find('> .forum-content') || ''
+  var $content = $thread.find('> .forum-content').html() || ''
   return $content
 }
 
