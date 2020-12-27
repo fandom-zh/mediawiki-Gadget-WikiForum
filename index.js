@@ -1,5 +1,15 @@
-const autoLoad = require('./module/autoLoad')
+/** Localization support is not yet complete */
 
+'use strict'
+
+/**
+ * @name WikiForum
+ * @author 机智的小鱼君 <dragon-fish@qq.com>
+ * @description Provide the forum similar to the Community Feed, and support wikitext!!!
+ *
+ * @license CC BY-SA
+ * @url https://github.com/Wjghj-Project/Gadget-WikiForum
+ */
 !(() => {
   // init global variable
   window.WikiForum = {
@@ -11,5 +21,5 @@ const autoLoad = require('./module/autoLoad')
     parser: require('./module/parser'),
   }
   // Auto load
-  autoLoad()
+  require('./module/autoLoad')()
 })()
