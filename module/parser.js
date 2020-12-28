@@ -13,8 +13,7 @@ function parseForums(code, title) {
   $root.each((index, forum) => {
     forums.push({
       id: String(index + 1),
-      title: $(forum).data('title') || title + (index + 1),
-      depthMax: $(forum).data('depthMax') || 3,
+      meta: $(forum).data(),
       threads: parseThreads(forum),
     })
   })
@@ -69,10 +68,10 @@ function getContent(thread) {
  * @param {Element} thread
  */
 function getMeta(thread) {
-  return {
-    user: getUser(thread),
-    time: getTime(thread),
-  }
+  var $thread = $(thread)
+  var $data = $thread.data()
+
+  return $data
 }
 
 /**

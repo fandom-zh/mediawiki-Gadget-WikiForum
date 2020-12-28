@@ -1,0 +1,43 @@
+[
+  {
+    "id": "1",
+    "title": "Forum Topic 1",
+    "depthMax": 3,
+    "threads": [
+      {
+        "id": "1",
+        "content": "I am first thread!",
+        "meta": {
+          "timePublish": "2020-12-27T8:08:00.000Z",
+          "userAuthor": "User1"
+        }
+      },
+      {
+        "id": "2",
+        "content": "I am second",
+        "meta": {
+          "timePublish": "2020-12-27T8:08:01.000Z",
+          "userAuthor": "User2"
+        },
+        "threads": [
+          {
+            "id": "2-1",
+            "content": "I am the reply in the second thread",
+            "meta": {
+              "timePublish": "2020-12-27T8:08:02.000Z",
+              "userAuthor": "User3"
+            }
+          }
+        ]
+      },
+      {
+        "id": "3",
+        "content": "I am third",
+        "meta": {
+          "timePublish": "2020-12-27T8:08:03.000Z",
+          "userAuthor": "User4"
+        }
+      }
+    ]
+  }
+]
