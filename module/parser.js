@@ -101,7 +101,7 @@ function getTime(thread) {
  * @param {Object} data 来自 API 的结果：api.php?action=parse&prop=wikitext|text&page=<pageName>
  */
 function fromApi(data) {
-  var { title } = data
+  var title = data.parse.title
   var wikitext = data.parse.wikitext['*']
   var html = data.parse.text['*']
 
