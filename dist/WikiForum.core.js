@@ -220,7 +220,7 @@ function getTime(thread) {
 
 
 function fromApi(data) {
-  var title = data.title;
+  var title = data.parse.title;
   var wikitext = data.parse.wikitext['*'];
   var html = data.parse.text['*']; // 防止输出没有根元素
 
