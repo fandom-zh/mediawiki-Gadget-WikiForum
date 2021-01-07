@@ -360,9 +360,11 @@ function renderForum(ctx) {
 }
 
 function renderThread(ctx, $root) {
-  var theme = ctx.theme,
+  var _forum = ctx._forum,
+      forumMeta = ctx.forumMeta,
       threads = ctx.threads,
-      forumid = ctx.forumid;
+      forumid = ctx.forumid,
+      theme = ctx.theme;
   $root = theme.forumContainer({
     meta: forumEl.meta
   });
