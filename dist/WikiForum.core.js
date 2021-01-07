@@ -346,7 +346,7 @@ function renderAllForums(_ref2) {
       forumid: forum.id,
       forumEl: forum,
       theme: theme
-    }));
+    }), theme.afterAllForums ? theme.afterAllForums() : '');
   });
   return $root;
 } // 渲染单个主题
@@ -384,7 +384,7 @@ function renderForum(ctx, $root) {
       $thread.append(renderForum(ctx1, $thread));
     }
 
-    $root.append($thread);
+    $root.append($thread, theme.afterForum ? theme.afterForum() : '');
   });
   return $root;
 }

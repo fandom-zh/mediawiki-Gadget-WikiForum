@@ -24,7 +24,7 @@ mw.hook('WikiForum.theme').add(function (next) {
   var allForumsContainer = function allForumsContainer(ctx) {
     return $('<div>', {
       "class": 'wiki-forum-all-container'
-    }).append(newForumContainer());
+    });
   }; // 单论坛容器
 
 
@@ -32,7 +32,7 @@ mw.hook('WikiForum.theme').add(function (next) {
     return $('<div>', {
       "class": 'wiki-forum',
       'data-forumid': ctx.meta.id
-    }).append(newThreadContainer());
+    });
   }; // 帖子容器
 
 
@@ -97,40 +97,44 @@ mw.hook('WikiForum.theme').add(function (next) {
 
 
   var newReplyContainer = function newReplyContainer(ctx) {
-    return $('<div>').append($('<p>', {
-      text: 'newReplyContainer'
-    }));
+    var $textArea = $('<textarea>', {
+      "class": 'forum-textarea'
+    });
+    var $submitBtn = $('<button>', {
+      text: '回复',
+      "class": 'forum-submit-btn'
+    }).click(function () {
+      var content = $textArea.val();
+      if (!content) return;
+      console.info('New reply', content);
+    });
+    var $container = $('<div>', {
+      "class": 'forum-new-reply-area'
+    }).append($('<label>', {
+      "class": 'forum-input-container'
+    }).append($('<div>').append($textArea), $('<div>').append($submitBtn)));
+    return $container;
   }; // 新帖子容器
 
 
   var newThreadContainer = function newThreadContainer(ctx) {
-    //   var $textArea = $('<textarea>', { class: 'forum-textarea' })
-    //   var $submitBtn = $('<button>', {
-    //     text: '提交',
-    //     class: 'forum-submit-btn',
-    //   }).click(function() {
-    //     var content = $textArea.val()
-    //     if (!content) return
-    //     newThread({
-    //       forumEl,
-    //       forumid,
-    //       content,
-    //     })
-    //   })
-    //   var $container = $('<div>', {
-    //     class: 'forum-new-thread-area',
-    //     'data-debug': JSON.stringify({
-    //       forumid,
-    //     }),
-    //   }).append(
-    //     $('<label>', { class: 'forum-input-container' }).append(
-    //       $('<div>').append($textArea),
-    //       $('<div>').append($submitBtn)
-    //     )
-    //   )
-    return $('<div>').append($('<p>', {
-      text: 'newThreadContainer'
-    }));
+    var $textArea = $('<textarea>', {
+      "class": 'forum-textarea'
+    });
+    var $submitBtn = $('<button>', {
+      text: '发送',
+      "class": 'forum-submit-btn'
+    }).click(function () {
+      var content = $textArea.val();
+      if (!content) return;
+      console.info('New thread', content);
+    });
+    var $container = $('<div>', {
+      "class": 'forum-new-thread-area'
+    }).append($('<label>', {
+      "class": 'forum-input-container'
+    }).append($('<div>').append($textArea), $('<div>').append($submitBtn)));
+    return $container;
   }; // 新论坛容器
 
 
@@ -141,7 +145,15 @@ mw.hook('WikiForum.theme').add(function (next) {
   }; // 无论坛容器
 
 
-  var noForumContainer = function noForumContainer(ctx) {}; // @function dateFormat
+  var noForumContainer = function noForumContainer(ctx) {};
+
+  var afterForum = function afterForum(ctx) {
+    return newThreadContainer(ctx);
+  };
+
+  var afterAllForums = function afterAllForums(ctx) {
+    return newForumContainer(ctx);
+  }; // @function dateFormat
 
 
   function dateFormat(fmt, date) {
@@ -179,7 +191,10 @@ mw.hook('WikiForum.theme').add(function (next) {
   next && next({
     allForumsContainer: allForumsContainer,
     forumContainer: forumContainer,
-    threadContainer: threadContainer
+    threadContainer: threadContainer,
+    afterAllForums: afterAllForums,
+    afterForum: afterForum,
+    noForumContainer: noForumContainer
   });
 });
 /******/ })()
