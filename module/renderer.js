@@ -52,7 +52,8 @@ function renderAllForums({ forumEl, theme }) {
         forumid: forum.id,
         forumEl: forum,
         theme,
-      })
+      }),
+      theme.afterAllForums ? theme.afterAllForums() : ''
     )
   })
   return $root
@@ -84,7 +85,7 @@ function renderForum(ctx, $root) {
       $thread.append(renderForum(ctx1, $thread))
     }
 
-    $root.append($thread)
+    $root.append($thread, theme.afterForum ? theme.afterForum() : '')
   })
 
   return $root
