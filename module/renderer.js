@@ -60,12 +60,10 @@ function renderAllForums({ forumEl, theme }) {
 }
 
 // 渲染单个主题
-function renderForum(ctx, $root) {
-  var { forumEl, theme } = ctx
-  $root = theme.forumContainer({ meta: forumEl.meta })
+function renderForum(ctx) {
+  var { theme } = ctx
 
-  renderThread(ctx, $root)
-
+  var $root = renderThread(ctx, $root)
   if (theme.afterForum) $root.append(theme.afterForum())
 
   return $root
@@ -73,11 +71,12 @@ function renderForum(ctx, $root) {
 
 function renderThread(ctx, $root) {
   var { theme, threads, forumid } = ctx
+  $root = theme.forumContainer({ meta: forumEl.meta })
 
   $.each(threads, (index, item) => {
     log('递归渲染贴子', { forumid, threadid: item.id })
     // 缓存帖子对象
-    var $thread = theme.threadContainer({
+    $thread = theme.threadContainer({
       _forum,
       forumMeta,
       forumid,
@@ -94,6 +93,8 @@ function renderThread(ctx, $root) {
     }
     $root.append($thread)
   })
+
+  return $root
 }
 
 var fn = {
