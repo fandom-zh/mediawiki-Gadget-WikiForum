@@ -70,7 +70,7 @@ function renderForum(ctx) {
 }
 
 function renderThread(ctx, $root) {
-  var { theme, threads, forumid } = ctx
+  var { _forum, forumMeta, threads, forumid, theme } = ctx
   $root = theme.forumContainer({ meta: forumEl.meta })
 
   $.each(threads, (index, item) => {
