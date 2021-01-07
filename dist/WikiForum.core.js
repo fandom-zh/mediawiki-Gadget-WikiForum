@@ -352,13 +352,9 @@ function renderAllForums(_ref2) {
 } // 渲染单个主题
 
 
-function renderForum(ctx, $root) {
-  var forumEl = ctx.forumEl,
-      theme = ctx.theme;
-  $root = theme.forumContainer({
-    meta: forumEl.meta
-  });
-  renderThread(ctx, $root);
+function renderForum(ctx) {
+  var theme = ctx.theme;
+  var $root = renderThread(ctx, $root);
   if (theme.afterForum) $root.append(theme.afterForum());
   return $root;
 }
@@ -367,13 +363,16 @@ function renderThread(ctx, $root) {
   var theme = ctx.theme,
       threads = ctx.threads,
       forumid = ctx.forumid;
+  $root = theme.forumContainer({
+    meta: forumEl.meta
+  });
   $.each(threads, function (index, item) {
     log('递归渲染贴子', {
       forumid: forumid,
       threadid: item.id
     }); // 缓存帖子对象
 
-    var $thread = theme.threadContainer({
+    $thread = theme.threadContainer({
       _forum: _forum,
       forumMeta: forumMeta,
       forumid: forumid,
@@ -390,6 +389,7 @@ function renderThread(ctx, $root) {
 
     $root.append($thread);
   });
+  return $root;
 }
 
 var fn = {
