@@ -24,7 +24,7 @@ mw.hook('WikiForum.theme').add(next => {
   // 帖子容器
   var threadContainer = ctx => {
     // 处理 meta
-    const id = String(ctx.meta.id)
+    const id = String(ctx.id)
     const content = cxt.content
     const timePublish =
       ctx.meta.timePublish || ctx.meta.timeRelease || ctx.meta.release || ''
@@ -40,7 +40,10 @@ mw.hook('WikiForum.theme').add(next => {
           class: 'mw-userlink userAuthor',
           text: userAuthor,
           href: mw.util.getUrl('User:' + userAuthor),
-        })
+        }),
+        userLast === userAuthor
+          ? ''
+          : $('<i>', { text: '（修改者：' + userLast + '）' })
       )
     )
     var $content = $('<div>', { class: 'forum-content', html: content })
