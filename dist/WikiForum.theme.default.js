@@ -38,7 +38,7 @@ mw.hook('WikiForum.theme').add(function (next) {
 
   var threadContainer = function threadContainer(ctx) {
     // 处理 meta
-    var id = String(ctx.meta.id);
+    var id = String(ctx.id);
     var content = cxt.content;
     var timePublish = ctx.meta.timePublish || ctx.meta.timeRelease || ctx.meta.release || '';
     var timeModify = ctx.meta.timeModify || timePublish;
@@ -57,6 +57,8 @@ mw.hook('WikiForum.theme').add(function (next) {
       "class": 'mw-userlink userAuthor',
       text: userAuthor,
       href: mw.util.getUrl('User:' + userAuthor)
+    }), userLast === userAuthor ? '' : $('<i>', {
+      text: '（修改者：' + userLast + '）'
     })));
     var $content = $('<div>', {
       "class": 'forum-content',

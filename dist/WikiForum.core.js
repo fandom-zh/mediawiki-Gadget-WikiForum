@@ -339,7 +339,7 @@ function renderAllForums(_ref2) {
   log('开始渲染全部论坛');
   $root = theme.allForumsContainer();
   $.each(forumEl, function (index, forum) {
-    log('递归渲染主题', "".concat(index + 1, "/").concat(index.length));
+    log('递归渲染主题', "".concat(index + 1, "/").concat(forumEl.length));
     $root.append(renderForum({
       _forum: forumEl,
       forumid: forum.id,
@@ -363,12 +363,13 @@ function renderForum(ctx, $root) {
   $.each(threads, function (index, item) {
     log('递归渲染贴子', {
       forumid: forumid,
-      threadid: item.meta.id
+      threadid: item.id
     }); // 缓存帖子对象
 
     var $thread = theme.threadContainer({
       _forum: _forum,
       forumid: forumid,
+      id: item.id,
       meta: item.meta,
       content: item.content,
       fn: fn
