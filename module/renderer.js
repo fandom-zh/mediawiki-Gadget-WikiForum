@@ -46,7 +46,13 @@ function renderAllForums({ forumEl, theme }) {
   $.each(forumEl, (index, forum) => {
     log('递归渲染主题', `${index + 1}/${forumEl.length}`)
     $root.append(
-      renderForum({ _forum: forumEl, forumid: forum.id, forumEl: forum, theme })
+      renderForum({
+        _forum: forumEl,
+        forumMata: forum.meta,
+        forumid: forum.id,
+        forumEl: forum,
+        theme,
+      })
     )
   })
   return $root
@@ -54,7 +60,7 @@ function renderAllForums({ forumEl, theme }) {
 
 // 渲染单个主题
 function renderForum(ctx, $root) {
-  var { _forum, forumEl, forumid, theme } = ctx
+  var { _forum, forumMata, forumEl, forumid, theme } = ctx
   var threads = forumEl.threads
   $root = $root || theme.forumContainer({ meta: forumEl.meta })
 
@@ -63,6 +69,7 @@ function renderForum(ctx, $root) {
     // 缓存帖子对象
     var $thread = theme.threadContainer({
       _forum,
+      forumMata,
       forumid,
       id: item.id,
       meta: item.meta,

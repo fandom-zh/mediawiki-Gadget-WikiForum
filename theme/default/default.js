@@ -57,7 +57,10 @@ mw.hook('WikiForum.theme').add(next => {
     // 楼主
     var $firstThread = $('<div>', { class: 'forum-thread forum-first' }).append(
       $('<div>', { class: 'forum-before' }).append(
-        $('<h3>', { class: 'forum-title', text: ctx.meta.title }),
+        $('<h3>', {
+          class: 'forum-title',
+          text: ctx.forumMeta.title || '[UNTITLED] Forum Topic #' + forumid,
+        }),
         $idLink,
         $userLink
       ),
