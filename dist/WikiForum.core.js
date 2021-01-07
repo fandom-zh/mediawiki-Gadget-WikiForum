@@ -383,9 +383,8 @@ function renderForum(ctx, $root) {
       ctx1.forumEl = item;
       $thread.append(renderForum(ctx1, $thread));
     }
-
-    $root.append($thread, theme.afterForum ? theme.afterForum() : '');
   });
+  $root.append($thread, theme.afterForum ? theme.afterForum() : '');
   return $root;
 }
 
