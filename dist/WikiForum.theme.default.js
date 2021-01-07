@@ -68,32 +68,30 @@ mw.hook('WikiForum.theme').add(function (next) {
       "class": 'post-time'
     }).append($('<i>', {
       "class": 'post-date timePublish',
-      text: new Date(timePublish).toLocaleString()
-    })); // 楼主
-
-    var $firstThread = $('<div>', {
-      "class": 'forum-thread forum-first'
-    }).append($('<div>', {
-      "class": 'forum-before'
-    }).append($('<h3>', {
-      "class": 'forum-title',
-      text: ctx.forumMeta.title || '[UNTITLED] Forum Topic #' + forumid
-    }), $idLink, $userLink), $content, $('<div>', {
-      "class": 'forum-after'
-    }).append($timeArea)); // 普通帖子
-
-    var $normalThread = $('<div>', {
-      "class": 'forum-thread'
-    }).append($('<div>', {
-      "class": 'forum-before'
-    }).append($idLink, $userLink), $content, $('<div>', {
-      "class": 'forum-after'
-    }).append($timeArea, newReplyContainer())); // 判断是否为楼主，并返回帖子容器
+      text: dateFormat('yyyy年M月d日 hh:mm:ss', new Date(timePublish))
+    })); // 判断是否为楼主，并返回帖子容器
 
     if (id === '1') {
-      return $firstThread;
+      // 楼主
+      return $('<div>', {
+        "class": 'forum-thread forum-first'
+      }).append($('<div>', {
+        "class": 'forum-before'
+      }).append($('<h3>', {
+        "class": 'forum-title',
+        text: ctx.forumMeta.title || '[UNTITLED] Forum Topic #' + forumid
+      }), $idLink, $userLink), $content, $('<div>', {
+        "class": 'forum-after'
+      }).append($timeArea));
     } else {
-      return $normalThread;
+      // 普通帖子
+      return $('<div>', {
+        "class": 'forum-thread'
+      }).append($('<div>', {
+        "class": 'forum-before'
+      }).append($idLink, $userLink), $content, $('<div>', {
+        "class": 'forum-after'
+      }).append($timeArea, newReplyContainer()));
     }
   }; // 新回复容器
 
@@ -143,7 +141,40 @@ mw.hook('WikiForum.theme').add(function (next) {
   }; // 无论坛容器
 
 
-  var noForumContainer = function noForumContainer(ctx) {};
+  var noForumContainer = function noForumContainer(ctx) {}; // @function dateFormat
+
+
+  function dateFormat(fmt, date) {
+    date = date || new Date();
+    var o = {
+      'M+': date.getMonth() + 1,
+      //月份
+      'd+': date.getDate(),
+      //日
+      'h+': date.getHours(),
+      //小时
+      'm+': date.getMinutes(),
+      //分
+      's+': date.getSeconds(),
+      //秒
+      'q+': Math.floor((date.getMonth() + 3) / 3),
+      //季度
+      S: date.getMilliseconds() //毫秒
+
+    };
+
+    if (/(y+)/.test(fmt)) {
+      fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
+    }
+
+    for (var k in o) {
+      if (new RegExp('(' + k + ')').test(fmt)) {
+        fmt = fmt.replace(RegExp.$1, RegExp.$1.length == 1 ? o[k] : ('00' + o[k]).substr(('' + o[k]).length));
+      }
+    }
+
+    return fmt;
+  }
 
   next && next({
     allForumsContainer: allForumsContainer,
