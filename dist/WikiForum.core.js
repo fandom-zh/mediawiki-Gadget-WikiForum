@@ -342,7 +342,7 @@ function renderAllForums(_ref2) {
     log('递归渲染主题', "".concat(index + 1, "/").concat(forumEl.length));
     $root.append(renderForum({
       _forum: forumEl,
-      forumMata: forum.meta,
+      forumMeta: forum.meta,
       forumid: forum.id,
       forumEl: forum,
       theme: theme
@@ -354,7 +354,7 @@ function renderAllForums(_ref2) {
 
 function renderForum(ctx, $root) {
   var _forum = ctx._forum,
-      forumMata = ctx.forumMata,
+      forumMeta = ctx.forumMeta,
       forumEl = ctx.forumEl,
       forumid = ctx.forumid,
       theme = ctx.theme;
@@ -370,7 +370,7 @@ function renderForum(ctx, $root) {
 
     var $thread = theme.threadContainer({
       _forum: _forum,
-      forumMata: forumMata,
+      forumMeta: forumMeta,
       forumid: forumid,
       id: item.id,
       meta: item.meta,
