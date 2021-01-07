@@ -77,7 +77,7 @@ mw.hook('WikiForum.theme').add(function (next) {
       "class": 'forum-before'
     }).append($('<h3>', {
       "class": 'forum-title',
-      text: ctx.meta.title
+      text: ctx.forumMeta.title || '[UNTITLED] Forum Topic #' + forumid
     }), $idLink, $userLink), $content, $('<div>', {
       "class": 'forum-after'
     }).append($timeArea)); // 普通帖子
