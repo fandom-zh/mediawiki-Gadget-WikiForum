@@ -25,7 +25,7 @@ mw.hook('WikiForum.theme').add(next => {
   var threadContainer = ctx => {
     // 处理 meta
     const id = String(ctx.id)
-    const content = cxt.content
+    const content = ctx.content
     const timePublish =
       ctx.meta.timePublish || ctx.meta.timeRelease || ctx.meta.release || ''
     const timeModify = ctx.meta.timeModify || timePublish
