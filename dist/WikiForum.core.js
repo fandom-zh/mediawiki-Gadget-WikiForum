@@ -99,13 +99,17 @@ module.exports = {
 /*!**************************!*\
   !*** ./module/parser.js ***!
   \**************************/
-/***/ (function(module) {
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
+var _require = __webpack_require__(/*! ./log */ "./module/log.js"),
+    log = _require.log;
 /**
  * @function parseForums 从源代码解析可能存在的全部主题
  * @param {Element} code
  * @param {String} title
  */
+
+
 function parseForums(code, title) {
   var $root = $(code);
   var forums = [];
@@ -114,9 +118,15 @@ function parseForums(code, title) {
     $root = $root.find('.wiki-forum');
   }
 
+  log('开始解析全论坛结构');
   $root.each(function (index, forum) {
+    log('单论坛结构', {
+      index: index,
+      forum: forum
+    });
     forums.push({
       id: String(index + 1),
+      title: title,
       meta: $(forum).data(),
       threads: parseThreads(forum)
     });
@@ -220,6 +230,7 @@ function getTime(thread) {
 
 
 function fromApi(data) {
+  log('从 API 结果解析论坛结构');
   var title = data.parse.title;
   var wikitext = data.parse.wikitext['*'];
   var html = data.parse.text['*']; // 防止输出没有根元素
@@ -240,6 +251,7 @@ function fromApi(data) {
   window.WikiForum.cache = window.WikiForum.cache || {};
   window.WikiForum.cache.pages = window.WikiForum.cache.pages || {};
   window.WikiForum.cache.pages[title] = Obj;
+  log('从 API 结果解析完成', Obj);
   return Obj;
 }
 /**
@@ -251,7 +263,9 @@ function fromApi(data) {
 function fromHtml(code) {
   var title = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
   var $code = $(code);
-  return parseForums($code);
+  var forumEl = parseForums($code);
+  log('从 HTML 源代码解析完成', forumEl);
+  return forumEl;
 }
 
 module.exports = {
@@ -274,9 +288,12 @@ var actionGet = __webpack_require__(/*! ./actionGet */ "./module/actionGet.js");
 
 var _require2 = __webpack_require__(/*! ./mw */ "./module/mw.js"),
     util = _require2.util,
-    hook = _require2.hook;
+    hook = _require2.hook,
+    conf = _require2.conf;
 
-var log = __webpack_require__(/*! ./log */ "./module/log.js"); // 获取帖子元素
+var _require3 = __webpack_require__(/*! ./log */ "./module/log.js"),
+    log = _require3.log,
+    error = _require3.error; // 获取帖子元素
 
 
 function getThread(_ref) {
@@ -297,7 +314,7 @@ function getThread(_ref) {
 
   var thread = forum;
   $.each(threadid, function (_, id) {
-    log.log('thread', thread.threads[id]);
+    log('thread', thread.threads[id]);
     thread = thread.threads[id];
   });
   return thread;
@@ -319,8 +336,10 @@ function getMeta(ctx) {
 function renderAllForums(_ref2) {
   var forumEl = _ref2.forumEl,
       theme = _ref2.theme;
+  log('开始渲染全部论坛');
   $root = theme.allForumsContainer();
   $.each(forumEl, function (index, forum) {
+    log('递归渲染主题', "".concat(index + 1, "/").concat(index.length));
     $root.append(renderForum({
       _forum: forumEl,
       forumid: forum.id,
@@ -342,7 +361,11 @@ function renderForum(ctx, $root) {
     meta: forumEl.meta
   });
   $.each(threads, function (index, item) {
-    // 缓存帖子对象
+    log('递归渲染贴子', {
+      forumid: forumid,
+      threadid: item.meta.id
+    }); // 缓存帖子对象
+
     var $thread = theme.threadContainer({
       _forum: _forum,
       forumid: forumid,
@@ -362,37 +385,7 @@ function renderForum(ctx, $root) {
   return $root;
 }
 
-function renderThread() {} // 生成新楼框
-
-
-function getNewThreadArea(_ref3) {
-  var forumEl = _ref3.forumEl,
-      forumid = _ref3.forumid;
-  var $textArea = $('<textarea>', {
-    "class": 'forum-textarea'
-  });
-  var $submitBtn = $('<button>', {
-    text: '提交',
-    "class": 'forum-submit-btn'
-  }).click(function () {
-    var content = $textArea.val();
-    if (!content) return;
-    newThread({
-      forumEl: forumEl,
-      forumid: forumid,
-      content: content
-    });
-  });
-  var $container = $('<div>', {
-    "class": 'forum-new-thread-area',
-    'data-debug': JSON.stringify({
-      forumid: forumid
-    })
-  }).append($('<label>', {
-    "class": 'forum-input-container'
-  }).append($('<div>').append($textArea), $('<div>').append($submitBtn)));
-  return $container;
-}
+function renderThread() {}
 
 var fn = {
   parser: __webpack_require__(/*! ./parser */ "./module/parser.js"),
@@ -400,21 +393,27 @@ var fn = {
 }; // 从页面加载内容，并渲染到根元素
 
 function fromPage() {
-  var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : util.wgPageName;
+  var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : conf.wgPageName;
   var target = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '#mw-content-text';
-  log.info('Strat to load page data', page);
+  log('从页面加载信息并渲染', {
+    page: page,
+    target: target
+  });
   actionGet(page).then(function (data) {
-    log.info('Page data ready', page);
+    log('成功从 API 获取源代码', page);
     var obj = fromApi(data);
     toPage(obj.html, target);
   }, function (err) {
-    log.err('Failed to load page data', err);
+    error('从 API 获取源代码失败', {
+      page: page,
+      err: err
+    });
   });
 } // 渲染返回HTML对象
 
 
 function toHtml(forumEl) {
-  log.log('renderHTML');
+  log('渲染并返回 HTML');
   mw.hook('WikiForum.theme').fire(function (theme) {
     return renderAllForums({
       forumEl: forumEl,
@@ -431,17 +430,18 @@ function toHtml(forumEl) {
 
 function toPage(forumEl) {
   var target = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '#mw-content-text';
-
+  log('准备渲染到页面');
   /**
    * 触发主题函数
-   * @param {Object} ctx 传入的上下文
-   * @param {Functon} next 返回的主题渲染器
+   * @param {Functon} theme 返回的主题渲染器
    */
+
   hook('WikiForum.theme').fire(function (theme) {
     $(target).html(renderAllForums({
       forumEl: forumEl,
       theme: theme
     }));
+    log('页面渲染完毕');
     hook('WikiForum.renderer').fire();
   });
 }
