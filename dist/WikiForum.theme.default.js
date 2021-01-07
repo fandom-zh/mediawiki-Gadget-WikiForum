@@ -39,7 +39,7 @@ mw.hook('WikiForum.theme').add(function (next) {
   var threadContainer = function threadContainer(ctx) {
     // 处理 meta
     var id = String(ctx.id);
-    var content = cxt.content;
+    var content = ctx.content;
     var timePublish = ctx.meta.timePublish || ctx.meta.timeRelease || ctx.meta.release || '';
     var timeModify = ctx.meta.timeModify || timePublish;
     var userAuthor = ctx.meta.userAuthor || ctx.meta.user || 'unsigned';
