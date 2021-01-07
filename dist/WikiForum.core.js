@@ -358,13 +358,14 @@ function renderForum(ctx, $root) {
   $root = theme.forumContainer({
     meta: forumEl.meta
   });
-  renderThread(forumEl, $root);
+  renderThread(ctx, $root);
   if (theme.afterForum) $root.append(theme.afterForum());
   return $root;
 }
 
 function renderThread(ctx, $root) {
-  var threads = ctx.threads,
+  var theme = ctx.theme,
+      threads = ctx.threads,
       forumid = ctx.forumid;
   $.each(threads, function (index, item) {
     log('递归渲染贴子', {
