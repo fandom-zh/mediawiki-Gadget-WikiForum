@@ -64,7 +64,7 @@ function renderForum(ctx, $root) {
   var { forumEl, theme } = ctx
   $root = theme.forumContainer({ meta: forumEl.meta })
 
-  renderThread(forumEl, $root)
+  renderThread(ctx, $root)
 
   if (theme.afterForum) $root.append(theme.afterForum())
 
@@ -72,7 +72,7 @@ function renderForum(ctx, $root) {
 }
 
 function renderThread(ctx, $root) {
-  var { threads, forumid } = ctx
+  var { theme, threads, forumid } = ctx
 
   $.each(threads, (index, item) => {
     log('递归渲染贴子', { forumid, threadid: item.id })
