@@ -71,19 +71,33 @@ mw.hook('WikiForum.theme').add(next => {
       )
     } else {
       // 普通帖子
+      var $replyArea = newReplyArea()
+
       return $('<div>', { class: 'forum-thread' }).append(
         $('<div>', { class: 'forum-before' }).append($idLink, $userLink),
         $content,
         $('<div>', { class: 'forum-after' }).append(
           $timeArea,
-          newReplyContainer()
+          $('<div>', { class: 'new-reply-container' }).append(
+            $('<div>', { class: 'modify-buttons-group' }).append(
+              $('<a>', {
+                class: 'reply-btn',
+                href: 'javascript:;',
+                text: '回复',
+              }).click(function(e) {
+                $replyArea.show()
+                $(this).hide()
+              })
+            ),
+            $replyArea
+          )
         )
       )
     }
   }
 
   // 新回复容器
-  var newReplyContainer = ctx => {
+  var newReplyArea = ctx => {
     var $textArea = $('<textarea>', { class: 'forum-textarea' })
     var $submitBtn = $('<button>', {
       text: '回复',
@@ -107,7 +121,7 @@ mw.hook('WikiForum.theme').add(next => {
   }
 
   // 新帖子容器
-  var newThreadContainer = ctx => {
+  var newThreadArea = ctx => {
     var $textArea = $('<textarea>', { class: 'forum-textarea' })
     var $submitBtn = $('<button>', {
       text: '发送',
@@ -139,7 +153,9 @@ mw.hook('WikiForum.theme').add(next => {
   var noForumContainer = ctx => {}
 
   var afterForum = ctx => {
-    return newThreadContainer(ctx)
+    return $('<div>', { class: 'forum-thread forum-add-thread' }).append(
+      newThreadArea(ctx)
+    )
   }
 
   var afterAllForums = ctx => {
