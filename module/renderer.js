@@ -1,7 +1,7 @@
 const { fromApi } = require('./parser')
 const actionGet = require('./actionGet')
-const { util, hook } = require('./mw')
-const log = require('./log')
+const { util, hook, conf } = require('./mw')
+const { log, error } = require('./log')
 
 // 获取帖子元素
 function getThread({ forumEl, forumid = '1', threadid }) {
@@ -20,7 +20,7 @@ function getThread({ forumEl, forumid = '1', threadid }) {
   // 开始递归 threads
   var thread = forum
   $.each(threadid, (_, id) => {
-    log.log('thread', thread.threads[id])
+    log('thread', thread.threads[id])
     thread = thread.threads[id]
   })
 
@@ -41,8 +41,10 @@ function getMeta(ctx) {
 
 // 递归全部主题
 function renderAllForums({ forumEl, theme }) {
+  log('开始渲染全部论坛')
   $root = theme.allForumsContainer()
   $.each(forumEl, (index, forum) => {
+    log('递归渲染主题', `${index + 1}/${index.length}`)
     $root.append(
       renderForum({ _forum: forumEl, forumid: forum.id, forumEl: forum, theme })
     )
@@ -57,6 +59,7 @@ function renderForum(ctx, $root) {
   $root = $root || theme.forumContainer({ meta: forumEl.meta })
 
   $.each(threads, (index, item) => {
+    log('递归渲染贴子', { forumid, threadid: item.meta.id })
     // 缓存帖子对象
     var $thread = theme.threadContainer({
       _forum,
@@ -81,60 +84,29 @@ function renderForum(ctx, $root) {
 
 function renderThread() {}
 
-// 生成新楼框
-function getNewThreadArea({ forumEl, forumid }) {
-  var $textArea = $('<textarea>', { class: 'forum-textarea' })
-  var $submitBtn = $('<button>', {
-    text: '提交',
-    class: 'forum-submit-btn',
-  }).click(function() {
-    var content = $textArea.val()
-    if (!content) return
-    newThread({
-      forumEl,
-      forumid,
-      content,
-    })
-  })
-
-  var $container = $('<div>', {
-    class: 'forum-new-thread-area',
-    'data-debug': JSON.stringify({
-      forumid,
-    }),
-  }).append(
-    $('<label>', { class: 'forum-input-container' }).append(
-      $('<div>').append($textArea),
-      $('<div>').append($submitBtn)
-    )
-  )
-
-  return $container
-}
-
 var fn = {
   parser: require('./parser'),
   updater: require('./updater'),
 }
 
 // 从页面加载内容，并渲染到根元素
-function fromPage(page = util.wgPageName, target = '#mw-content-text') {
-  log.info('Strat to load page data', page)
+function fromPage(page = conf.wgPageName, target = '#mw-content-text') {
+  log('从页面加载信息并渲染', { page, target })
   actionGet(page).then(
     data => {
-      log.info('Page data ready', page)
+      log('成功从 API 获取源代码', page)
       var obj = fromApi(data)
       toPage(obj.html, target)
     },
     err => {
-      log.err('Failed to load page data', err)
+      error('从 API 获取源代码失败', { page, err })
     }
   )
 }
 
 // 渲染返回HTML对象
 function toHtml(forumEl) {
-  log.log('renderHTML')
+  log('渲染并返回 HTML')
   mw.hook('WikiForum.theme').fire(theme => {
     return renderAllForums({ forumEl, theme })
   })
@@ -146,13 +118,14 @@ function toHtml(forumEl) {
  * @param {String|Element} target 渲染的根元素
  */
 function toPage(forumEl, target = '#mw-content-text') {
+  log('准备渲染到页面')
   /**
    * 触发主题函数
-   * @param {Object} ctx 传入的上下文
-   * @param {Functon} next 返回的主题渲染器
+   * @param {Functon} theme 返回的主题渲染器
    */
   hook('WikiForum.theme').fire(theme => {
     $(target).html(renderAllForums({ forumEl, theme }))
+    log('页面渲染完毕')
     hook('WikiForum.renderer').fire()
   })
 }

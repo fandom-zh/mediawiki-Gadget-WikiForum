@@ -87,6 +87,32 @@ mw.hook('WikiForum.theme').add(next => {
 
   // 新帖子容器
   var newThreadContainer = ctx => {
+    var $textArea = $('<textarea>', { class: 'forum-textarea' })
+    var $submitBtn = $('<button>', {
+      text: '提交',
+      class: 'forum-submit-btn',
+    }).click(function() {
+      var content = $textArea.val()
+      if (!content) return
+      newThread({
+        forumEl,
+        forumid,
+        content,
+      })
+    })
+
+    var $container = $('<div>', {
+      class: 'forum-new-thread-area',
+      'data-debug': JSON.stringify({
+        forumid,
+      }),
+    }).append(
+      $('<label>', { class: 'forum-input-container' }).append(
+        $('<div>').append($textArea),
+        $('<div>').append($submitBtn)
+      )
+    )
+
     return $('<div>').append($('<p>', { text: 'newThreadContainer' }))
   }
 

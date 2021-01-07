@@ -1,3 +1,5 @@
+const { log } = require('./log')
+
 /**
  * @function parseForums 从源代码解析可能存在的全部主题
  * @param {Element} code
@@ -10,9 +12,14 @@ function parseForums(code, title) {
   if (!$root.hasClass('wiki-forum')) {
     $root = $root.find('.wiki-forum')
   }
+
+  log('开始解析全论坛结构')
+
   $root.each((index, forum) => {
+    log('单论坛结构', { index, forum })
     forums.push({
       id: String(index + 1),
+      title,
       meta: $(forum).data(),
       threads: parseThreads(forum),
     })
@@ -101,6 +108,8 @@ function getTime(thread) {
  * @param {Object} data 来自 API 的结果：api.php?action=parse&prop=wikitext|text&page=<pageName>
  */
 function fromApi(data) {
+  log('从 API 结果解析论坛结构')
+
   var title = data.parse.title
   var wikitext = data.parse.wikitext['*']
   var html = data.parse.text['*']
@@ -124,6 +133,8 @@ function fromApi(data) {
   window.WikiForum.cache = window.WikiForum.cache || {}
   window.WikiForum.cache.pages = window.WikiForum.cache.pages || {}
   window.WikiForum.cache.pages[title] = Obj
+
+  log('从 API 结果解析完成', Obj)
   return Obj
 }
 
@@ -133,7 +144,9 @@ function fromApi(data) {
  */
 function fromHtml(code, title = '') {
   var $code = $(code)
-  return parseForums($code)
+  var forumEl = parseForums($code)
+  log('从 HTML 源代码解析完成', forumEl)
+  return forumEl
 }
 
 module.exports = {
