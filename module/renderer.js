@@ -48,7 +48,7 @@ function renderAllForums({ forumEl, theme }) {
     $root.append(
       renderForum({
         _forum: forumEl,
-        forumMata: forum.meta,
+        forumMeta: forum.meta,
         forumid: forum.id,
         forumEl: forum,
         theme,
@@ -60,7 +60,7 @@ function renderAllForums({ forumEl, theme }) {
 
 // 渲染单个主题
 function renderForum(ctx, $root) {
-  var { _forum, forumMata, forumEl, forumid, theme } = ctx
+  var { _forum, forumMeta, forumEl, forumid, theme } = ctx
   var threads = forumEl.threads
   $root = $root || theme.forumContainer({ meta: forumEl.meta })
 
@@ -69,7 +69,7 @@ function renderForum(ctx, $root) {
     // 缓存帖子对象
     var $thread = theme.threadContainer({
       _forum,
-      forumMata,
+      forumMeta,
       forumid,
       id: item.id,
       meta: item.meta,
