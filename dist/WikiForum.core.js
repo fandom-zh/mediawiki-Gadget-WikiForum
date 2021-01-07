@@ -353,15 +353,19 @@ function renderAllForums(_ref2) {
 
 
 function renderForum(ctx, $root) {
-  var _forum = ctx._forum,
-      forumMeta = ctx.forumMeta,
-      forumEl = ctx.forumEl,
-      forumid = ctx.forumid,
+  var forumEl = ctx.forumEl,
       theme = ctx.theme;
-  var threads = forumEl.threads;
-  $root = $root || theme.forumContainer({
+  $root = theme.forumContainer({
     meta: forumEl.meta
   });
+  renderThread(forumEl, $root);
+  if (theme.afterForum) $root.append(theme.afterForum());
+  return $root;
+}
+
+function renderThread(ctx, $root) {
+  var threads = ctx.threads,
+      forumid = ctx.forumid;
   $.each(threads, function (index, item) {
     log('递归渲染贴子', {
       forumid: forumid,
@@ -379,18 +383,13 @@ function renderForum(ctx, $root) {
     }); // 如果有回复，处理回复
 
     if (item.threads && item.threads.length > 0) {
-      var ctx1 = ctx;
-      ctx1.forumEl = item;
-      $thread.append(renderForum(ctx1, $thread));
+      ctx.forumEl = item;
+      $thread.append(renderThread(ctx, $thread));
     }
 
     $root.append($thread);
   });
-  if (theme.afterForum) $root.append(theme.afterForum());
-  return $root;
 }
-
-function renderThread() {}
 
 var fn = {
   parser: __webpack_require__(/*! ./parser */ "./module/parser.js"),
