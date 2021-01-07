@@ -361,6 +361,7 @@ function renderForum(ctx) {
 
 function renderThread(ctx, $root) {
   var _forum = ctx._forum,
+      forumEl = ctx.forumEl,
       forumMeta = ctx.forumMeta,
       threads = ctx.threads,
       forumid = ctx.forumid,
