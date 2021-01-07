@@ -15,85 +15,114 @@
 /**
  * @function theme.default 标准的官方主题
  * @param {Object} ctx
- * @param {jQuery<Element>} ctx.fn.newThreadArea
- * @param {jQuery<Element>} ctx.fn.newReplyArea
- * @param {Object} ctx.meta
+ * @param {Object} ctx.meta Metadata
  *
  * @param {Function} next
  */
 mw.hook('WikiForum.theme').add(function (next) {
+  // 全论坛容器
   var allForumsContainer = function allForumsContainer(ctx) {
     return $('<div>', {
       "class": 'wiki-forum-all-container'
-    });
-  };
+    }).append(newForumContainer());
+  }; // 单论坛容器
+
 
   var forumContainer = function forumContainer(ctx) {
     return $('<div>', {
       "class": 'wiki-forum',
       'data-forumid': ctx.meta.id
-    });
-  };
+    }).append(newThreadContainer());
+  }; // 帖子容器
 
-  var firstThread = function firstThread(ctx) {
-    return $('<div>', {
+
+  var threadContainer = function threadContainer(ctx) {
+    // 处理 meta
+    var id = String(ctx.meta.id);
+    var content = cxt.content;
+    var timePublish = ctx.meta.timePublish || ctx.meta.timeRelease || ctx.meta.release || '';
+    var timeModify = ctx.meta.timeModify || timePublish;
+    var userAuthor = ctx.meta.userAuthor || ctx.meta.user || 'unsigned';
+    var userLast = ctx.meta.userLast || userAuthor; // 缓存组件
+
+    var $idLink = $('<span>', {
+      "class": 'forum-id-link',
+      text: '#' + id
+    });
+    var $userLink = $('<div>', {
+      "class": 'forum-user'
+    }).append($('<span>', {
+      "class": 'forum-user-link'
+    }).append($('<a>', {
+      "class": 'mw-userlink userAuthor',
+      text: userAuthor,
+      href: mw.util.getUrl('User:' + userAuthor)
+    })));
+    var $content = $('<div>', {
+      "class": 'forum-content',
+      html: content
+    });
+    var $timeArea = $('<div>', {
+      "class": 'post-time'
+    }).append($('<i>', {
+      "class": 'post-date timePublish',
+      text: new Date(timePublish).toLocaleString()
+    })); // 楼主
+
+    var $firstThread = $('<div>', {
       "class": 'forum-thread forum-first'
     }).append($('<div>', {
       "class": 'forum-before'
     }).append($('<h3>', {
       "class": 'forum-title',
       text: ctx.meta.title
-    }), $('<span>', {
-      "class": 'forum-id-link',
-      text: '#' + ctx.meta.id
-    }), $('<div>', {
-      "class": 'forum-user'
-    }).append($('<span>', {
-      "class": 'forum-user-link'
-    }).append($('<a>', {
-      text: ctx.meta.userAuthor,
-      href: mw.util.getUrl('User:' + ctx.meta.userAuthor)
-    })))), $('<div>', {
-      "class": 'forum-content',
-      html: ctx.content
-    }), $('<div>', {
+    }), $idLink, $userLink), $content, $('<div>', {
       "class": 'forum-after'
-    }).append($('<i>', {
-      "class": 'post-date',
-      text: new Date(ctx.meta.timePublish).toLocaleString()
-    })), ctx.fn.newThreadArea);
-  };
+    }).append($timeArea)); // 普通帖子
 
-  var normalThread = function normalThread(ctx) {
-    return $('<div>', {
+    var $normalThread = $('<div>', {
       "class": 'forum-thread'
     }).append($('<div>', {
       "class": 'forum-before'
-    }).append($('<div>', {
-      "class": 'forum-user'
-    }).append($('<span>', {
-      "class": 'forum-user-link'
-    }).append($('<a>', {
-      text: ctx.meta.userAuthor,
-      href: mw.util.getUrl('User:' + ctx.meta.userAuthor)
-    })))), $('<div>', {
-      "class": 'forum-content',
-      html: ctx.content
-    }), $('<div>', {
+    }).append($idLink, $userLink), $content, $('<div>', {
       "class": 'forum-after'
-    }).append($('<i>', {
-      "class": 'post-date',
-      text: new Date(ctx.meta.timePublish).toLocaleString()
-    }), ctx.fn.newReplyArea));
-  };
+    }).append($timeArea, newReplyContainer())); // 判断是否为楼主，并返回帖子容器
+
+    if (id === '1') {
+      return $firstThread;
+    } else {
+      return $normalThread;
+    }
+  }; // 新回复容器
+
+
+  var newReplyContainer = function newReplyContainer(ctx) {
+    return $('<div>').append($('<p>', {
+      text: 'newReplyContainer'
+    }));
+  }; // 新帖子容器
+
+
+  var newThreadContainer = function newThreadContainer(ctx) {
+    return $('<div>').append($('<p>', {
+      text: 'newThreadContainer'
+    }));
+  }; // 新论坛容器
+
+
+  var newForumContainer = function newForumContainer(ctx) {
+    return $('<div>').append($('<p>', {
+      text: 'newForumContainer'
+    }));
+  }; // 无论坛容器
+
+
+  var noForumContainer = function noForumContainer(ctx) {};
 
   next && next({
     allForumsContainer: allForumsContainer,
     forumContainer: forumContainer,
-    // beforeForum,
-    firstThread: firstThread,
-    normalThread: normalThread // afterForum,
-
+    threadContainer: threadContainer
   });
 });
 /******/ })()

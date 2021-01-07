@@ -273,7 +273,8 @@ var _require = __webpack_require__(/*! ./parser */ "./module/parser.js"),
 var actionGet = __webpack_require__(/*! ./actionGet */ "./module/actionGet.js");
 
 var _require2 = __webpack_require__(/*! ./mw */ "./module/mw.js"),
-    util = _require2.util;
+    util = _require2.util,
+    hook = _require2.hook;
 
 var log = __webpack_require__(/*! ./log */ "./module/log.js"); // 获取帖子元素
 
@@ -337,47 +338,18 @@ function renderForum(ctx, $root) {
       forumid = ctx.forumid,
       theme = ctx.theme;
   var threads = forumEl.threads;
-  $root = $root || $(theme.forumContainer({
+  $root = $root || theme.forumContainer({
     meta: forumEl.meta
-  }));
-  var newThreadArea = getNewThreadArea({
-    forumEl: _forum,
-    forumid: _forum.meta.id
   });
   $.each(threads, function (index, item) {
     // 缓存帖子对象
-    var $thread;
-
-    if (index === 0 && forumEl.title) {
-      // 楼主
-      $thread = theme.firstThread({
-        meta: item.meta,
-        content: item.content,
-        fn: {
-          newThreadArea: newThreadArea,
-          newReplyArea: getNewReplyArea({
-            forumEl: _forum,
-            forumid: forumid,
-            threadid: item.id
-          })
-        }
-      });
-    } else {
-      // 一般楼层
-      $thread = theme.normalThread({
-        meta: item.meta,
-        content: item.content,
-        fn: {
-          newThreadArea: newThreadArea,
-          newReplyArea: getNewReplyArea({
-            forumEl: _forum,
-            forumid: forumid,
-            threadid: item.id
-          })
-        }
-      });
-    } // 如果有回复，处理回复
-
+    var $thread = theme.threadContainer({
+      _forum: _forum,
+      forumid: forumid,
+      meta: item.meta,
+      content: item.content,
+      fn: fn
+    }); // 如果有回复，处理回复
 
     if (item.threads && item.threads.length > 0) {
       var ctx1 = ctx;
@@ -388,50 +360,14 @@ function renderForum(ctx, $root) {
     $root.append($thread);
   });
   return $root;
-} // 生成回复框
+}
+
+function renderThread() {} // 生成新楼框
 
 
-function getNewReplyArea(_ref3) {
+function getNewThreadArea(_ref3) {
   var forumEl = _ref3.forumEl,
-      forumid = _ref3.forumid,
-      threadid = _ref3.threadid;
-  var $replyBtn = $('<a>', {
-    text: '回复',
-    href: 'javascript:;'
-  });
-  var $modifyBtn = $('<a>', {
-    text: '编辑',
-    href: 'javascript:;'
-  });
-  var $deleteBtn = $('<a>', {
-    text: '删除',
-    href: 'javascript:;'
-  });
-  var $textArea = $('<textarea>', {
-    "class": 'forum-textarea'
-  });
-  var $submitBtn = $('<button>', {
-    text: '提交',
-    "class": 'forum-submit-btn'
-  });
-  var $container = $('<div>', {
-    "class": 'forum-new-reply-area',
-    'data-debug': JSON.stringify({
-      forumid: forumid,
-      threadid: threadid
-    })
-  }).append($('<div>', {
-    "class": 'forum-modify-container'
-  }).append($replyBtn, $modifyBtn, $deleteBtn), $('<label>', {
-    "class": 'forum-input-container'
-  }).append($('<div>').append($textArea), $('<div>').append($submitBtn)));
-  return $container;
-} // 生成新楼框
-
-
-function getNewThreadArea(_ref4) {
-  var forumEl = _ref4.forumEl,
-      forumid = _ref4.forumid;
+      forumid = _ref3.forumid;
   var $textArea = $('<textarea>', {
     "class": 'forum-textarea'
   });
@@ -456,8 +392,12 @@ function getNewThreadArea(_ref4) {
     "class": 'forum-input-container'
   }).append($('<div>').append($textArea), $('<div>').append($submitBtn)));
   return $container;
-} // 从页面加载内容，并渲染到根元素
+}
 
+var fn = {
+  parser: __webpack_require__(/*! ./parser */ "./module/parser.js"),
+  updater: __webpack_require__(/*! ./updater */ "./module/updater.js")
+}; // 从页面加载内容，并渲染到根元素
 
 function fromPage() {
   var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : util.wgPageName;
@@ -497,11 +437,12 @@ function toPage(forumEl) {
    * @param {Object} ctx 传入的上下文
    * @param {Functon} next 返回的主题渲染器
    */
-  mw.hook('WikiForum.theme').fire(function (theme) {
+  hook('WikiForum.theme').fire(function (theme) {
     $(target).html(renderAllForums({
       forumEl: forumEl,
       theme: theme
     }));
+    hook('WikiForum.renderer').fire();
   });
 }
 
