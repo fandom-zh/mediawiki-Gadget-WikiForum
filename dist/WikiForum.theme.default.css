@@ -63,13 +63,13 @@
 }
 .wiki-forum-all-container .wiki-forum .forum-create-title,
 .wiki-forum-all-container .wiki-forum .forum-textarea {
-  resize: none;
   border: none;
   background: rgba(0,0,0,0.05);
   padding: 6px;
   margin: 4px;
   border-radius: 4px;
-  width: 100%;
+  max-width: 100%;
+  min-width: 100%;
   box-sizing: border-box;
 }
 .wiki-forum-all-container .wiki-forum .forum-create-title {

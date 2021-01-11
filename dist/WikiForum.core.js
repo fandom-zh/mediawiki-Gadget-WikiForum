@@ -125,7 +125,7 @@ function parseForums(code, title) {
       forum: forum
     });
     forums.push({
-      id: String(index + 1),
+      forumid: String(index + 1),
       meta: $.extend({}, $(forum).data(), {
         pageName: title
       }),
@@ -149,13 +149,13 @@ function parseThreads(forum) {
   $threads = getThreads($forum);
   $.each($threads, function (index, thread) {
     var threadObj = {
-      id: String(prefix + (index + 1)),
+      threadid: String(prefix + (index + 1)),
       content: getContent(thread),
       meta: getMeta(thread)
     };
 
     if (getThreads(thread).length > 0) {
-      threadObj.threads = parseThreads(thread, threadObj.id);
+      threadObj.threads = parseThreads(thread, threadObj.threadid);
     }
 
     threads.push(threadObj);
@@ -335,17 +335,18 @@ function getMeta(ctx) {
 
 
 function renderAllForums(_ref2) {
-  var forumEl = _ref2.forumEl,
+  var Obj = _ref2.Obj,
       theme = _ref2.theme;
   log('开始渲染全部论坛');
   $root = theme.allForumsContainer();
-  $.each(forumEl, function (index, forum) {
-    log('递归渲染主题', "".concat(index + 1, "/").concat(forumEl.length));
+  var html = Obj.html;
+  $.each(html, function (index, forum) {
+    log('递归渲染主题', "".concat(index + 1, "/").concat(html.length));
     $root.append(renderForum({
-      _forum: forumEl,
+      _forum: Obj,
       forumMeta: forum.meta,
-      forumid: forum.id,
-      forumEl: forum,
+      forumid: forum.forumid,
+      forum: forum,
       theme: theme
     }), theme.afterAllForums ? theme.afterAllForums() : '');
   });
@@ -354,19 +355,18 @@ function renderAllForums(_ref2) {
 
 
 function renderForum(ctx) {
-  log('renderForum ctx', ctx);
   var _forum = ctx._forum,
-      forumEl = ctx.forumEl,
+      forum = ctx.forum,
       forumMeta = ctx.forumMeta,
       forumid = ctx.forumid,
       theme = ctx.theme;
-  var $root = theme.forumContainer({
-    meta: forumEl.meta
+  log('渲染主题', {
+    forumid: forumid
   });
-  $.each(forumEl.threads, function (index, thread) {
-    log('递归渲染贴子', {
-      forumid: forumid
-    });
+  var $root = theme.forumContainer({
+    meta: forumMeta
+  });
+  $.each(forum.threads, function (index, thread) {
     $root.append(renderThread({
       _forum: _forum,
       theme: theme,
@@ -375,7 +375,16 @@ function renderForum(ctx) {
       forumid: forumid
     }));
   });
-  if (theme.afterForum) $root.append(theme.afterForum());
+
+  if (theme.afterForum) {
+    $root.append(theme.afterForum({
+      _forum: _forum,
+      forumMeta: forumMeta,
+      forumid: forumid,
+      fn: fn
+    }));
+  }
+
   return $root;
 } // 渲染单个帖子
 
@@ -386,24 +395,27 @@ function renderThread(ctx) {
       thread = ctx.thread,
       forumMeta = ctx.forumMeta,
       forumid = ctx.forumid;
+  var content = thread.content,
+      meta = thread.meta,
+      threadid = thread.threadid;
   log('渲染贴子', {
     forumid: forumid,
-    threadid: thread.id
+    threadid: threadid
   }); // 缓存帖子对象
 
-  $thread = theme.threadContainer({
+  var $thread = theme.threadContainer({
     _forum: _forum,
     forumMeta: forumMeta,
     forumid: forumid,
-    id: thread.id,
-    meta: thread.meta,
-    content: thread.content,
+    threadid: threadid,
+    meta: meta,
+    content: content,
     fn: fn
   }); // 如果有回复，处理回复
 
   if (thread.threads && thread.threads.length > 0) {
-    $.each(thread.threads, function (index, thread1) {
-      ctx.thread = thread1;
+    $.each(thread.threads, function (index, thread) {
+      ctx.thread = thread;
       $thread.append(renderThread(ctx));
     });
   }
@@ -425,8 +437,8 @@ function fromPage() {
   });
   actionGet(page).then(function (data) {
     log('成功从 API 获取源代码', page);
-    var obj = fromApi(data);
-    toPage(obj.html, target);
+    var Obj = fromApi(data);
+    toPage(Obj, target);
   }, function (err) {
     error('从 API 获取源代码失败', {
       page: page,
@@ -452,7 +464,7 @@ function toHtml(forumEl) {
  */
 
 
-function toPage(forumEl) {
+function toPage(Obj) {
   var target = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '#mw-content-text';
   log('准备渲染到页面，等待主题文件……');
   /**
@@ -462,7 +474,7 @@ function toPage(forumEl) {
 
   hook('WikiForum.theme').fire(function (theme) {
     $(target).html(renderAllForums({
-      forumEl: forumEl,
+      Obj: Obj,
       theme: theme
     }));
     log('页面渲染完毕');
@@ -489,22 +501,28 @@ module.exports = {
 var _require = __webpack_require__(/*! ./mw */ "./module/mw.js"),
     conf = _require.conf;
 
+var _require2 = __webpack_require__(/*! ./log */ "./module/log.js"),
+    log = _require2.log;
+
 function newThreadStruc(_ref) {
   var meta = _ref.meta,
-      content = _ref.content;
+      content = _ref.content,
+      _ref$reply = _ref.reply,
+      reply = _ref$reply === void 0 ? '' : _ref$reply;
   // 将 fooBar 转换为 foo-bar 的形式
-  var meta1 = {};
   $.each(meta, function (key, val) {
-    key = 'data-' + key.replace(/(.*)([A-Z])(.*)/g, '$1-$2$3').toLowerCase();
-    meta1[key] = val;
+    var newKey = key.replace(/(.*)([A-Z])(.*)/g, '$1-$2$3').toLowerCase();
+    meta[newKey] = val;
+    delete meta[key];
+  }); // meta 转换为字符串
+
+  var metaList = [];
+  $.each(meta, function (key, val) {
+    metaList.push("data-".concat(key, "=\"").concat(val, "\""));
   });
-  meta = meta1;
-  return $('<div>', {
-    "class": 'forum-thread'
-  }).attr(meta).append($('<div>', {
-    "class": 'forum-content',
-    html: content
-  }));
+  metaList = metaList.join(' ');
+  var html = "<!-- thread -->\n<div class=\"forum-thread\" ".concat(metaList, ">\n<div class=\"forum-content\"></div>").concat(reply ? '\n' + reply : '', "\n</div>\n<!-- /thread -->");
+  return html;
 }
 
 function hasThread(thread, id) {
@@ -517,27 +535,35 @@ function isComplex() {}
 
 function makeWikitext(obj) {}
 
+function timeStamp() {
+  return new Date().toISOString();
+}
+/**
+ * @function updateThread 编辑内容
+ */
+
+
 function updateThread(_ref2) {
   var forumEl = _ref2.forumEl,
       _ref2$forumid = _ref2.forumid,
       forumid = _ref2$forumid === void 0 ? '1' : _ref2$forumid,
       threadid = _ref2.threadid,
       content = _ref2.content;
-  // 将 id 调整为程序可读的 index
+  var wikitext = forumEl.wikitext; // 将 id 调整为程序可读的 index
+
   forumid = Number(forumid);
   forumid--;
-  var forum = forumEl[forumid];
+  var forum = wikitext[forumid];
 
   function findAndUpdate(_ref3, base) {
     var threadid = _ref3.threadid,
         content = _ref3.content;
-    base = base || forum;
     var allThreads = base.threads;
     $.each(allThreads, function (index, item) {
-      if (item.id === threadid) {
+      if (item.threadid === threadid) {
         item.content = content;
         item.meta.userLast = conf.wgUserName;
-        item.meta.timeModify = new Date().toISOString();
+        item.meta.timeModify = timeStamp();
       } else if (item.threads) {
         findAndUpdate({
           threadid: threadid,
@@ -550,32 +576,120 @@ function updateThread(_ref2) {
   findAndUpdate({
     threadid: threadid,
     content: content
+  }, forum);
+  log('Update thread', {
+    forumid: forumid,
+    threadid: threadid,
+    content: content
   });
-  return forumEl;
+  handleEdit(wikitext);
 }
+/**
+ * @function addThread 盖新楼，回复楼主
+ */
+
 
 function addThread(_ref4) {
   var forumEl = _ref4.forumEl,
-      forumid = _ref4.forumid;
+      forumid = _ref4.forumid,
+      content = _ref4.content;
+  var wikitext = forumEl.wikitext;
   forumid = Number(forumid);
   forumid--;
-  var now = new Date();
-  var timestamp = now.toISOString();
-  forumEl[forumid].threads.push({
-    meta: {}
+  wikitext[forumid].threads.push({
+    meta: {
+      userAuthor: conf.wgUserName,
+      userLast: conf.wgUserName,
+      timePublish: timeStamp(),
+      timeModify: timeStamp()
+    },
+    content: content
   });
+  log('Add thread', {
+    forumid: forumid,
+    content: content
+  });
+  handleEdit(wikitext);
 }
+/**
+ * @function addReply 新回复，回复层主
+ */
+
 
 function addReply(_ref5) {
   var forumEl = _ref5.forumEl,
       _ref5$forumid = _ref5.forumid,
       forumid = _ref5$forumid === void 0 ? '1' : _ref5$forumid,
-      threadid = _ref5.threadid;
+      threadid = _ref5.threadid,
+      content = _ref5.content;
+  var wikitext = forumEl.wikitext; // 给楼主回复其实就是盖新楼
+
+  if (threadid === '1') {
+    return addThread({
+      forumEl: forumEl,
+      forumid: forumid,
+      content: content
+    });
+  }
+
+  forumid = Number(forumid);
+  forumid--;
+  var forum = wikitext[forumid];
+
+  function findAndUpdate(_ref6, base) {
+    var threadid = _ref6.threadid,
+        content = _ref6.content;
+    var allThreads = base.threads;
+    $.each(allThreads, function (index, item) {
+      if (item.threadid === threadid) {
+        item.threads = item.threads || [];
+        item.threads.push({
+          meta: {
+            userAuthor: conf.wgUserName,
+            userLast: conf.wgUserName,
+            timePublish: timeStamp(),
+            timeModify: timeStamp()
+          },
+          content: content
+        });
+      } else if (item.threads) {
+        findAndUpdate({
+          threadid: threadid,
+          content: content
+        }, item);
+      }
+    });
+  }
+
+  findAndUpdate({
+    threadid: threadid,
+    content: content
+  }, forum);
+  log('Add reply', {
+    forumid: forumid,
+    threadid: threadid,
+    content: content
+  });
+  handleEdit(wikitext);
+}
+/**
+ * @function handleEdit 将forumEl转换为wikitext并发布
+ * @param {Object} forumEl
+ */
+
+
+function handleEdit(forumEl) {
+  log('Make edit', forumEl, {
+    pageName: forumEl[0].meta.pageName,
+    forumsNum: forumEl.length
+  });
 }
 
 module.exports = {
   addReply: addReply,
+  newReply: addReply,
   addThread: addThread,
+  newThread: addThread,
   updateThread: updateThread // deleteThread,
 
 };

@@ -38,16 +38,25 @@ mw.hook('WikiForum.theme').add(function (next) {
 
   var threadContainer = function threadContainer(ctx) {
     // 处理 meta
-    var id = String(ctx.id);
-    var content = ctx.content;
+    var forumid = ctx.forumid,
+        threadid = ctx.threadid,
+        content = ctx.content;
     var timePublish = ctx.meta.timePublish || ctx.meta.timeRelease || ctx.meta.release || '';
     var timeModify = ctx.meta.timeModify || timePublish;
     var userAuthor = ctx.meta.userAuthor || ctx.meta.user || 'unsigned';
-    var userLast = ctx.meta.userLast || userAuthor; // 缓存组件
+    var userLast = ctx.meta.userLast || userAuthor;
+    var htmlId = "forum-".concat(forumid, "_thread-").concat(threadid); // 缓存组件
 
-    var $idLink = $('<span>', {
+    var $idLink = $('<a>', {
       "class": 'forum-id-link',
-      text: '#' + id
+      text: '#' + threadid,
+      href: "#".concat(htmlId)
+    }).click(function (e) {
+      e.preventDefault();
+      var $block = $('#' + htmlId);
+      $('html,body').animate({
+        scrollTop: $block.offset().top
+      }, 500);
     });
     var $userLink = $('<div>', {
       "class": 'forum-user'
@@ -71,9 +80,10 @@ mw.hook('WikiForum.theme').add(function (next) {
       text: dateFormat('yyyy年M月d日 hh:mm:ss', new Date(timePublish))
     })); // 判断是否为楼主，并返回帖子容器
 
-    if (id === '1') {
+    if (threadid === '1') {
       // 楼主
       return $('<div>', {
+        id: htmlId,
         "class": 'forum-thread forum-first'
       }).append($('<div>', {
         "class": 'forum-before'
@@ -85,7 +95,15 @@ mw.hook('WikiForum.theme').add(function (next) {
       }).append($timeArea));
     } else {
       // 普通帖子
-      var $replyArea = newReplyArea();
+      var _forumid = ctx.forumid,
+          _forum = ctx._forum,
+          fn = ctx.fn;
+      var $replyArea = newReplyArea({
+        forumEl: _forum,
+        forumid: _forumid,
+        threadid: threadid,
+        fn: fn
+      });
       return $('<div>', {
         "class": 'forum-thread'
       }).append($('<div>', {
@@ -118,7 +136,15 @@ mw.hook('WikiForum.theme').add(function (next) {
     }).click(function () {
       var content = $textArea.val();
       if (!content) return;
-      console.info('New reply', content);
+      var forumEl = ctx.forumEl,
+          forumid = ctx.forumid,
+          threadid = ctx.threadid;
+      ctx.fn.updater.addReply({
+        forumEl: forumEl,
+        content: content,
+        forumid: forumid,
+        threadid: threadid
+      });
     });
     var $container = $('<div>', {
       "class": 'forum-new-reply-area'
@@ -130,6 +156,8 @@ mw.hook('WikiForum.theme').add(function (next) {
 
 
   var newThreadArea = function newThreadArea(ctx) {
+    var _forum = ctx._forum,
+        forumid = ctx.forumid;
     var $textArea = $('<textarea>', {
       "class": 'forum-textarea'
     });
@@ -139,11 +167,17 @@ mw.hook('WikiForum.theme').add(function (next) {
     }).click(function () {
       var content = $textArea.val();
       if (!content) return;
-      console.info('New thread', content);
+      ctx.fn.updater.addThread({
+        forumEl: _forum,
+        forumid: forumid,
+        content: content
+      });
     });
     var $container = $('<div>', {
       "class": 'forum-new-thread-area'
-    }).append($('<label>', {
+    }).append($('<strong>', {
+      text: '回复楼主'
+    }), $('<label>', {
       "class": 'forum-input-container'
     }).append($('<div>').append($textArea), $('<div>').append($submitBtn)));
     return $container;
@@ -217,7 +251,9 @@ mw.hook('WikiForum.theme').add(function (next) {
   });
 }); // Import style
 
-mw.loader.load('https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.theme.default.css', 'text/css');
+if (window.WikiForumDefaultThemeStyle !== false) {
+  mw.loader.load('https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.theme.default.css', 'text/css');
+}
 /******/ })()
 ;
 //# sourceMappingURL=WikiForum.theme.default.js.map
