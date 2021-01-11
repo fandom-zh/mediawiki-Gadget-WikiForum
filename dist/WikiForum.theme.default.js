@@ -9,9 +9,55 @@
  */
 
 /******/ (function() { // webpackBootstrap
-/*!**********************************!*\
-  !*** ./theme/default/default.js ***!
-  \**********************************/
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./module/mw.js":
+/*!**********************!*\
+  !*** ./module/mw.js ***!
+  \**********************/
+/***/ (function(module) {
+
+module.exports = {
+  api: mw.util.wikiScript('api'),
+  conf: mw.config.get(),
+  editToken: mw.user.tokens.get('editToken'),
+  hook: mw.hook,
+  util: mw.util
+};
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		if(__webpack_module_cache__[moduleId]) {
+/******/ 			return __webpack_module_cache__[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+!function() {
+/*!**************************!*\
+  !*** ./theme/default.js ***!
+  \**************************/
+var mw = __webpack_require__(/*! ../module/mw */ "./module/mw.js");
 /**
  * @function theme.default 标准的官方主题
  * @param {Object} ctx
@@ -19,6 +65,8 @@
  *
  * @param {Function} next
  */
+
+
 mw.hook('WikiForum.theme').add(function (next) {
   // 全论坛容器
   var allForumsContainer = function allForumsContainer(ctx) {
@@ -210,7 +258,10 @@ mw.hook('WikiForum.theme').add(function (next) {
     afterForum: afterForum,
     noForumContainer: noForumContainer
   });
-});
+}); // Import style
+
+mw.loader.load('https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.theme.default.css');
+}();
 /******/ })()
 ;
 //# sourceMappingURL=WikiForum.theme.default.js.map

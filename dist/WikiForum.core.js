@@ -126,8 +126,9 @@ function parseForums(code, title) {
     });
     forums.push({
       id: String(index + 1),
-      title: title,
-      meta: $(forum).data(),
+      meta: $.extend({}, $(forum).data(), {
+        pageName: title
+      }),
       threads: parseThreads(forum)
     });
   });
@@ -353,46 +354,61 @@ function renderAllForums(_ref2) {
 
 
 function renderForum(ctx) {
-  var theme = ctx.theme;
-  var $root = renderThread(ctx, $root);
-  if (theme.afterForum) $root.append(theme.afterForum());
-  return $root;
-}
-
-function renderThread(ctx, $root) {
+  log('renderForum ctx', ctx);
   var _forum = ctx._forum,
       forumEl = ctx.forumEl,
       forumMeta = ctx.forumMeta,
-      threads = ctx.threads,
       forumid = ctx.forumid,
       theme = ctx.theme;
-  $root = theme.forumContainer({
+  var $root = theme.forumContainer({
     meta: forumEl.meta
   });
-  $.each(threads, function (index, item) {
+  $.each(forumEl.threads, function (index, thread) {
     log('递归渲染贴子', {
-      forumid: forumid,
-      threadid: item.id
-    }); // 缓存帖子对象
-
-    $thread = theme.threadContainer({
+      forumid: forumid
+    });
+    $root.append(renderThread({
       _forum: _forum,
+      theme: theme,
+      thread: thread,
       forumMeta: forumMeta,
-      forumid: forumid,
-      id: item.id,
-      meta: item.meta,
-      content: item.content,
-      fn: fn
-    }); // 如果有回复，处理回复
-
-    if (item.threads && item.threads.length > 0) {
-      ctx.forumEl = item;
-      $thread.append(renderThread(ctx, $thread));
-    }
-
-    $root.append($thread);
+      forumid: forumid
+    }));
   });
+  if (theme.afterForum) $root.append(theme.afterForum());
   return $root;
+} // 渲染单个帖子
+
+
+function renderThread(ctx) {
+  var _forum = ctx._forum,
+      theme = ctx.theme,
+      thread = ctx.thread,
+      forumMeta = ctx.forumMeta,
+      forumid = ctx.forumid;
+  log('渲染贴子', {
+    forumid: forumid,
+    threadid: thread.id
+  }); // 缓存帖子对象
+
+  $thread = theme.threadContainer({
+    _forum: _forum,
+    forumMeta: forumMeta,
+    forumid: forumid,
+    id: thread.id,
+    meta: thread.meta,
+    content: thread.content,
+    fn: fn
+  }); // 如果有回复，处理回复
+
+  if (thread.threads && thread.threads.length > 0) {
+    $.each(thread.threads, function (index, thread1) {
+      ctx.thread = thread1;
+      $thread.append(renderThread(ctx));
+    });
+  }
+
+  return $thread;
 }
 
 var fn = {
@@ -438,7 +454,7 @@ function toHtml(forumEl) {
 
 function toPage(forumEl) {
   var target = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '#mw-content-text';
-  log('准备渲染到页面');
+  log('准备渲染到页面，等待主题文件……');
   /**
    * 触发主题函数
    * @param {Functon} theme 返回的主题渲染器
