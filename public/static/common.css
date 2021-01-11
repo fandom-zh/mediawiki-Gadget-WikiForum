@@ -1,0 +1,94 @@
+/* common CSS file */
+
+/* Root */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  font-family: '微软雅黑', Arial, Helvetica, sans-serif;
+}
+body {
+  background-color: rgb(113, 191, 255);
+  min-height: 100vh;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.25rem 1rem;
+}
+
+/* Header, footer */
+header,
+footer {
+  background-color: #30a0ff;
+  color: #ffffff;
+}
+
+/* Header */
+header h1 {
+  line-height: 1.2;
+  font-size: 2rem;
+}
+
+/* Logo */
+.logo {
+  display: inline-block;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #ffffff;
+  width: 1.6em;
+  height: 1.6em;
+  line-height: 1.6;
+  text-align: center;
+}
+.logo > span {
+  position: relative;
+  font-size: 0.5em;
+  line-height: 1;
+  display: inline-block;
+  width: 100%;
+  height: 1em;
+  top: calc(-50% + 0.5em);
+  left: 50%;
+  transform: translateX(-50%) translateY(50%);
+}
+.first-header {
+  font-size: 5rem;
+  text-align: center;
+}
+.first-header .logo {
+  box-shadow: 0 0 0 4px #bbbbbb;
+}
+
+/* Main */
+main {
+  min-height: 75vh;
+}
+main .container {
+  margin: 1rem;
+  background-color: #ffffff;
+  border-radius: 4px;
+}
+
+/* Footer */
+footer {
+  margin: 0;
+  padding: 0;
+}
+
+/* head */
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-variant: small-caps;
+}
+
+/* Link */
+a {
+  color: #3060df;
+  text-decoration: none;
+}

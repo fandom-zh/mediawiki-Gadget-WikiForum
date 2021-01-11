@@ -2,7 +2,7 @@
 
 const path = require('path')
 const webpack = require('webpack')
-const version = require('./package.json').version
+const TerserPlugin = require('terser-webpack-plugin')
 
 const isMinify = process.env.MINIFY
 
@@ -27,6 +27,7 @@ module.exports = {
   entry: {
     'WikiForum.core': './index.js',
     'WikiForum.theme.default': './theme/default/default.js',
+    'WikiForum.loader.default': './loader/default.js',
   },
   target: ['web', 'es5'],
   context: path.resolve(__dirname),
@@ -55,5 +56,14 @@ module.exports = {
   plugins: [BannerPlugin],
   optimization: {
     minimize: isMinify ? true : false,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          // compress: {
+          //   drop_console: true,
+          // },
+        },
+      }),
+    ],
   },
 }
