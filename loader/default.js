@@ -1,7 +1,8 @@
 mw.hook('WikiForum').add(function(Core) {
-  WikiForum = window.WikiForum || {}
-  var loadNS = WikiForum.loadNS || []
+  var loadNS = window.WikiForumNS || []
+
   if (typeof loadNS === 'number') loadNS = [loadNS]
+
   var conf = mw.config.get()
   if (
     loadNS.includes(conf.wgNamespaceNumber) &&

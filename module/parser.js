@@ -19,8 +19,7 @@ function parseForums(code, title) {
     log('单论坛结构', { index, forum })
     forums.push({
       id: String(index + 1),
-      title,
-      meta: $(forum).data(),
+      meta: $.extend({}, $(forum).data(), { pageName: title }),
       threads: parseThreads(forum),
     })
   })

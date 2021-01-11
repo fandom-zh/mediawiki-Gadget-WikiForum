@@ -26,7 +26,7 @@ const BannerPlugin = new webpack.BannerPlugin({
 module.exports = {
   entry: {
     'WikiForum.core': './index.js',
-    'WikiForum.theme.default': './theme/default/default.js',
+    'WikiForum.theme.default': './theme/default.js',
     'WikiForum.loader.default': './loader/default.js',
   },
   target: ['web', 'es5'],
@@ -49,6 +49,20 @@ module.exports = {
         },
         exclude: '/node_modules/',
       },
+      // {
+      //   test: /\.styl$/,
+      //   use: [
+      //     {
+      //       loader: 'style-loader',
+      //     },
+      //     {
+      //       loader: 'css-loader',
+      //     },
+      //     {
+      //       loader: 'stylus-loader',
+      //     },
+      //   ],
+      // },
     ],
   },
   resolve: {},

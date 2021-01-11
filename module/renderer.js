@@ -61,40 +61,54 @@ function renderAllForums({ forumEl, theme }) {
 
 // 渲染单个主题
 function renderForum(ctx) {
-  var { theme } = ctx
+  log('renderForum ctx', ctx)
+  var { _forum, forumEl, forumMeta, forumid, theme } = ctx
 
-  var $root = renderThread(ctx, $root)
+  var $root = theme.forumContainer({ meta: forumEl.meta })
+
+  $.each(forumEl.threads, (index, thread) => {
+    log('递归渲染贴子', { forumid })
+    $root.append(
+      renderThread({
+        _forum,
+        theme,
+        thread,
+        forumMeta,
+        forumid,
+      })
+    )
+  })
+
   if (theme.afterForum) $root.append(theme.afterForum())
 
   return $root
 }
 
-function renderThread(ctx, $root) {
-  var { _forum, forumEl, forumMeta, threads, forumid, theme } = ctx
-  $root = theme.forumContainer({ meta: forumEl.meta })
+// 渲染单个帖子
+function renderThread(ctx) {
+  var { _forum, theme, thread, forumMeta, forumid } = ctx
+  log('渲染贴子', { forumid, threadid: thread.id })
 
-  $.each(threads, (index, item) => {
-    log('递归渲染贴子', { forumid, threadid: item.id })
-    // 缓存帖子对象
-    $thread = theme.threadContainer({
-      _forum,
-      forumMeta,
-      forumid,
-      id: item.id,
-      meta: item.meta,
-      content: item.content,
-      fn,
-    })
-
-    // 如果有回复，处理回复
-    if (item.threads && item.threads.length > 0) {
-      ctx.forumEl = item
-      $thread.append(renderThread(ctx, $thread))
-    }
-    $root.append($thread)
+  // 缓存帖子对象
+  $thread = theme.threadContainer({
+    _forum,
+    forumMeta,
+    forumid,
+    id: thread.id,
+    meta: thread.meta,
+    content: thread.content,
+    fn,
   })
 
-  return $root
+  // 如果有回复，处理回复
+  if (thread.threads && thread.threads.length > 0) {
+    $.each(thread.threads, (index, thread1) => {
+      ctx.thread = thread1
+      $thread.append(renderThread(ctx))
+    })
+  }
+
+  return $thread
 }
 
 var fn = {
@@ -131,7 +145,7 @@ function toHtml(forumEl) {
  * @param {String|Element} target 渲染的根元素
  */
 function toPage(forumEl, target = '#mw-content-text') {
-  log('准备渲染到页面')
+  log('准备渲染到页面，等待主题文件……')
   /**
    * 触发主题函数
    * @param {Functon} theme 返回的主题渲染器
