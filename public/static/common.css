@@ -42,6 +42,7 @@ header h1 {
   height: 1.6em;
   line-height: 1.6;
   text-align: center;
+  user-select: none;
 }
 .logo > span {
   position: relative;
@@ -67,7 +68,7 @@ main {
   min-height: 75vh;
 }
 main .container {
-  margin: 1rem;
+  margin: 1rem auto;
   background-color: #ffffff;
   border-radius: 4px;
 }
