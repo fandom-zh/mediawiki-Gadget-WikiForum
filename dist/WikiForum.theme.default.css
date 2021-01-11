@@ -1,0 +1,105 @@
+/**
+ * WikiForum default theme style
+ */
+.wiki-forum-all-container .wiki-forum {
+  border-top: 6px dotted rgba(0,0,0,0.2);
+}
+.wiki-forum-all-container .wiki-forum:last-of-type {
+  border-bottom: 6px dotted rgba(0,0,0,0.2);
+}
+.wiki-forum-all-container .wiki-forum .forum-thread,
+.wiki-forum-all-container .wiki-forum .forum-add-reply {
+  background-color: rgba(0,0,0,0.05);
+  margin: 1rem;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  border-left: 4px solid rgba(0,0,0,0.2);
+}
+.wiki-forum-all-container .wiki-forum .forum-first {
+  border-color: rgba(0,0,0,0.5);
+}
+.wiki-forum-all-container .wiki-forum .forum-first .forum-content {
+  font-size: 1.2rem;
+  line-height: 1.8;
+}
+.wiki-forum-all-container .wiki-forum .forum-add-thread {
+  border-color: #008000;
+}
+.wiki-forum-all-container .wiki-forum .forum-before {
+  position: relative;
+}
+.wiki-forum-all-container .wiki-forum .forum-before .forum-avatar {
+  border-radius: 50%;
+  border: 2px solid rgba(0,0,0,0.2);
+  width: 1.4rem;
+  height: 1.4rem;
+}
+.wiki-forum-all-container .wiki-forum .forum-before .forum-id-link {
+  position: absolute;
+  right: 0.1rem;
+  top: 0.1rem;
+}
+.wiki-forum-all-container .wiki-forum .forum-after .forum-new-reply-area {
+  display: none;
+}
+.wiki-forum-all-container .wiki-forum .forum-after .post-time {
+  font-size: small;
+  color: #888;
+}
+.wiki-forum-all-container .wiki-forum .forum-input-container {
+  display: flex;
+  position: relative;
+}
+.wiki-forum-all-container .wiki-forum .forum-input-container > div {
+  display: flex;
+}
+.wiki-forum-all-container .wiki-forum .forum-input-container > div:first-of-type {
+  flex: 7;
+}
+.wiki-forum-all-container .wiki-forum .forum-input-container > div:last-of-type {
+  width: 2.8rem;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+.wiki-forum-all-container .wiki-forum .forum-create-title,
+.wiki-forum-all-container .wiki-forum .forum-textarea {
+  resize: none;
+  border: none;
+  background: rgba(0,0,0,0.05);
+  padding: 6px;
+  margin: 4px;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.wiki-forum-all-container .wiki-forum .forum-create-title {
+  display: block;
+  width: calc(100% - 12px);
+}
+.wiki-forum-all-container .wiki-forum .forum-submit-btn {
+  width: calc(100% - 12px);
+  padding: 1px 2px;
+  margin: 0 4px;
+}
+.wiki-forum-all-container .forum-loading {
+  position: relative;
+}
+.wiki-forum-all-container .forum-loading:before,
+.wiki-forum-all-container .forum-loading:after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.wiki-forum-all-container .forum-loading:before {
+  z-index: 10;
+  background: rgba(255,255,255,0.5);
+}
+.wiki-forum-all-container .forum-loading:after {
+  background-image: url("https://vignette.wikia.nocookie.net/dftest/images/8/8c/Ms-loading-spinner.svg/revision/latest?cb=20191203083420");
+  background-position: 50%;
+  background-repeat: no-repeat;
+}
