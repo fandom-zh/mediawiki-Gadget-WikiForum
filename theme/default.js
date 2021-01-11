@@ -1,5 +1,3 @@
-const mw = require("../module/mw")
-
 /**
  * @function theme.default 标准的官方主题
  * @param {Object} ctx
@@ -164,6 +162,10 @@ mw.hook('WikiForum.theme').add(next => {
     return newForumContainer(ctx)
   }
 
+  var handleLoading = container => {
+    $(container).addClass('forum-loading')
+  }
+
   // @function dateFormat
   function dateFormat(fmt, date) {
     date = date || new Date()
@@ -202,8 +204,12 @@ mw.hook('WikiForum.theme').add(next => {
       afterAllForums,
       afterForum,
       noForumContainer,
+      handleLoading,
     })
 })
 
 // Import style
-mw.loader.load('https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.theme.default.css')
+mw.loader.load(
+  'https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.theme.default.css',
+  'text/css'
+)
