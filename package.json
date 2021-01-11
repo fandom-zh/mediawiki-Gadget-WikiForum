@@ -7,7 +7,7 @@
   "author": "Dragon-Fish <824399619@qq.com>",
   "license": "MIT",
   "scripts": {
-    "build": "yarn clear && webpack && MINIFY=1 webpack",
+    "build": "yarn clear && webpack && MINIFY=1 webpack && yarn style",
     "dev": "yarn clear && webpack --watch -o ./dev/",
     "clear": "rm -rf ./dist ./**/dist ./dev",
     "lint": "eslint ./index.js ./module/*.js ./method/*.js",
