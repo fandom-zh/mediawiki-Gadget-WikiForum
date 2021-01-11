@@ -1,9 +1,70 @@
-<h1>Hello, WikiForum</h1>
-
-<p>
-<a href="https://github.com/Wjghj-Project/Gadget-WikiForum">HOME</a>
-|
-<a href="https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.core.min.js">WikiForum.core</a>
-|
-<a href="https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.theme.default.min.js">WikiForum.theme.default</a>
-</p>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gadget-WikiForum</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/solarized-light.css">
+    <link rel="stylesheet" href="./static/common.css" />
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1 class="main-header">
+          <div class="logo"><span>logo</span></div>
+          Gadget-WikiForum
+        </h1>
+      </div>
+    </header>
+    <main>
+      <div class="container">
+        <section>
+          <h2 class="first-header">
+            <div class="logo"><span>logo</span></div>
+          </h2>
+          <p>
+            <strong>Gadget-WikiForum</strong> provide a front-end structured
+            discussion page with JavaScript for MediaWiki app.
+          </p>
+        </section>
+        <section>
+          <h2>Quick Start</h2>
+          <p>
+            This is a quick-start guide. It allows you to load a forum with basic functions using a preset scheme.
+          </p>
+          <h3>Step 1: Create a gadget page in your wiki</h3>
+          <p>For example:</p>
+          <em>MediaWiki:Gadget-WikiForum.js</em>
+          <h3>Step 2: Invoke Core</h3>
+          <p>
+            <pre class="code lang-js">mw.loader.load('https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.core.min.js')</pre>
+          </p>
+          <h3>Step 3: Invoke Default Theme</h3>
+          <p>
+            <pre class="code">mw.loader.load('https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.theme.default.min.js')</pre>
+          </p>
+          <h3>Step 4: Invoke Default Loader and Configure</h3>
+          <p>
+            <pre class="code">mw.loader.load('https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.loader.default.min.js')<br>window.WikiForumNS = [/* Your Forum NamespaceNumber here */]</pre>
+          </p>
+          <h3>Step 5: Enable the gadget</h3>
+          <p>Insert a new line to <em>MediaWiki:Gadgets-definition</em> to regist the gadget.</p>
+          <p>
+            <pre class="code">* WikiForum[ResourceLoader|hidden|default]|WikiForum.js</pre>
+          </p>
+        </section>
+      </div>
+    </main>
+    <footer>
+      <div class="container">
+        <p class="copy">
+          &copy; Copyright (c) (<span id="copyYear">2020</span>)
+          <a href="https://proj.wjghj.cn">Wjghj-Project</a>
+          (机智的小鱼君). MIT license
+        </p>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.3.1/build/highlight.min.js"></script>
+    <script src="./static/common.js"></script>
+  </body>
+</html>
