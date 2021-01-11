@@ -18,7 +18,7 @@ function parseForums(code, title) {
   $root.each((index, forum) => {
     log('单论坛结构', { index, forum })
     forums.push({
-      id: String(index + 1),
+      forumid: String(index + 1),
       meta: $.extend({}, $(forum).data(), { pageName: title }),
       threads: parseThreads(forum),
     })
@@ -38,12 +38,12 @@ function parseThreads(forum, prefix = '') {
   $threads = getThreads($forum)
   $.each($threads, (index, thread) => {
     var threadObj = {
-      id: String(prefix + (index + 1)),
+      threadid: String(prefix + (index + 1)),
       content: getContent(thread),
       meta: getMeta(thread),
     }
     if (getThreads(thread).length > 0) {
-      threadObj.threads = parseThreads(thread, threadObj.id)
+      threadObj.threads = parseThreads(thread, threadObj.threadid)
     }
     threads.push(threadObj)
   })

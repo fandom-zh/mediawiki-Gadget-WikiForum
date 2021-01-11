@@ -22,16 +22,24 @@ mw.hook('WikiForum.theme').add(next => {
   // 帖子容器
   var threadContainer = ctx => {
     // 处理 meta
-    const id = String(ctx.id)
-    const content = ctx.content
+    const { forumid, threadid, content } = ctx
     const timePublish =
       ctx.meta.timePublish || ctx.meta.timeRelease || ctx.meta.release || ''
     const timeModify = ctx.meta.timeModify || timePublish
     const userAuthor = ctx.meta.userAuthor || ctx.meta.user || 'unsigned'
     const userLast = ctx.meta.userLast || userAuthor
+    const htmlId = `forum-${forumid}_thread-${threadid}`
 
     // 缓存组件
-    var $idLink = $('<span>', { class: 'forum-id-link', text: '#' + id })
+    var $idLink = $('<a>', {
+      class: 'forum-id-link',
+      text: '#' + threadid,
+      href: `#${htmlId}`,
+    }).click(function(e) {
+      e.preventDefault()
+      const $block = $('#' + htmlId)
+      $('html,body').animate({ scrollTop: $block.offset().top }, 500)
+    })
     var $userLink = $('<div>', { class: 'forum-user' }).append(
       $('<span>', { class: 'forum-user-link' }).append(
         $('<a>', {
@@ -53,9 +61,10 @@ mw.hook('WikiForum.theme').add(next => {
     )
 
     // 判断是否为楼主，并返回帖子容器
-    if (id === '1') {
+    if (threadid === '1') {
       // 楼主
       return $('<div>', {
+        id: htmlId,
         class: 'forum-thread forum-first',
       }).append(
         $('<div>', { class: 'forum-before' }).append(
@@ -71,7 +80,13 @@ mw.hook('WikiForum.theme').add(next => {
       )
     } else {
       // 普通帖子
-      var $replyArea = newReplyArea()
+      const { forumid, _forum, fn } = ctx
+      var $replyArea = newReplyArea({
+        forumEl: _forum,
+        forumid,
+        threadid,
+        fn,
+      })
 
       return $('<div>', { class: 'forum-thread' }).append(
         $('<div>', { class: 'forum-before' }).append($idLink, $userLink),
@@ -105,7 +120,13 @@ mw.hook('WikiForum.theme').add(next => {
     }).click(function() {
       var content = $textArea.val()
       if (!content) return
-      console.info('New reply', content)
+      const { forumEl, forumid, threadid } = ctx
+      ctx.fn.updater.addReply({
+        forumEl,
+        content,
+        forumid,
+        threadid,
+      })
     })
 
     var $container = $('<div>', {
@@ -122,6 +143,8 @@ mw.hook('WikiForum.theme').add(next => {
 
   // 新帖子容器
   var newThreadArea = ctx => {
+    const { _forum, forumid } = ctx
+
     var $textArea = $('<textarea>', { class: 'forum-textarea' })
     var $submitBtn = $('<button>', {
       text: '发送',
@@ -129,12 +152,17 @@ mw.hook('WikiForum.theme').add(next => {
     }).click(function() {
       var content = $textArea.val()
       if (!content) return
-      console.info('New thread', content)
+      ctx.fn.updater.addThread({
+        forumEl: _forum,
+        forumid,
+        content,
+      })
     })
 
     var $container = $('<div>', {
       class: 'forum-new-thread-area',
     }).append(
+      $('<strong>', { text: '回复楼主' }),
       $('<label>', { class: 'forum-input-container' }).append(
         $('<div>').append($textArea),
         $('<div>').append($submitBtn)
@@ -209,7 +237,9 @@ mw.hook('WikiForum.theme').add(next => {
 })
 
 // Import style
-mw.loader.load(
-  'https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.theme.default.css',
-  'text/css'
-)
+if (window.WikiForumDefaultThemeStyle !== false) {
+  mw.loader.load(
+    'https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.theme.default.css',
+    'text/css'
+  )
+}

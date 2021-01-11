@@ -1,17 +1,28 @@
 const { conf } = require('./mw')
+const { log } = require('./log')
 
-function newThreadStruc({ meta, content }) {
+function newThreadStruc({ meta, content, reply = '' }) {
   // 将 fooBar 转换为 foo-bar 的形式
-  var meta1 = {}
   $.each(meta, (key, val) => {
-    key = 'data-' + key.replace(/(.*)([A-Z])(.*)/g, '$1-$2$3').toLowerCase()
-    meta1[key] = val
+    let newKey = key.replace(/(.*)([A-Z])(.*)/g, '$1-$2$3').toLowerCase()
+    meta[newKey] = val
+    delete meta[key]
   })
-  meta = meta1
 
-  return $('<div>', { class: 'forum-thread' })
-    .attr(meta)
-    .append($('<div>', { class: 'forum-content', html: content }))
+  // meta 转换为字符串
+  var metaList = []
+  $.each(meta, (key, val) => {
+    metaList.push(`data-${key}="${val}"`)
+  })
+  metaList = metaList.join(' ')
+
+  var html = `<!-- thread -->
+<div class="forum-thread" ${metaList}>
+<div class="forum-content"></div>${reply ? '\n' + reply : ''}
+</div>
+<!-- /thread -->`
+
+  return html
 }
 
 function hasThread(thread, id) {
@@ -24,48 +35,120 @@ function isComplex() {}
 
 function makeWikitext(obj) {}
 
+function timeStamp() {
+  return new Date().toISOString()
+}
+
+/**
+ * @function updateThread 编辑内容
+ */
 function updateThread({ forumEl, forumid = '1', threadid, content }) {
+  const { wikitext } = forumEl
   // 将 id 调整为程序可读的 index
   forumid = Number(forumid)
   forumid--
-  var forum = forumEl[forumid]
+  const forum = wikitext[forumid]
 
   function findAndUpdate({ threadid, content }, base) {
-    base = base || forum
     var allThreads = base.threads
     $.each(allThreads, (index, item) => {
-      if (item.id === threadid) {
+      if (item.threadid === threadid) {
         item.content = content
         item.meta.userLast = conf.wgUserName
-        item.meta.timeModify = new Date().toISOString()
+        item.meta.timeModify = timeStamp()
       } else if (item.threads) {
         findAndUpdate({ threadid, content }, item)
       }
     })
   }
 
-  findAndUpdate({ threadid, content })
+  findAndUpdate({ threadid, content }, forum)
 
-  return forumEl
+  log('Update thread', { forumid, threadid, content })
+  handleEdit(wikitext)
 }
 
-function addThread({ forumEl, forumid }) {
+/**
+ * @function addThread 盖新楼，回复楼主
+ */
+function addThread({ forumEl, forumid, content }) {
+  const { wikitext } = forumEl
   forumid = Number(forumid)
   forumid--
 
-  var now = new Date()
-  var timestamp = now.toISOString()
+  wikitext[forumid].threads.push({
+    meta: {
+      userAuthor: conf.wgUserName,
+      userLast: conf.wgUserName,
+      timePublish: timeStamp(),
+      timeModify: timeStamp(),
+    },
+    content,
+  })
 
-  forumEl[forumid].threads.push({
-    meta: {},
+  log('Add thread', { forumid, content })
+
+  handleEdit(wikitext)
+}
+
+/**
+ * @function addReply 新回复，回复层主
+ */
+function addReply({ forumEl, forumid = '1', threadid, content }) {
+  const { wikitext } = forumEl
+  // 给楼主回复其实就是盖新楼
+  if (threadid === '1') {
+    return addThread({ forumEl, forumid, content })
+  }
+
+  forumid = Number(forumid)
+  forumid--
+
+  const forum = wikitext[forumid]
+
+  function findAndUpdate({ threadid, content }, base) {
+    var allThreads = base.threads
+    $.each(allThreads, (index, item) => {
+      if (item.threadid === threadid) {
+        item.threads = item.threads || []
+        item.threads.push({
+          meta: {
+            userAuthor: conf.wgUserName,
+            userLast: conf.wgUserName,
+            timePublish: timeStamp(),
+            timeModify: timeStamp(),
+          },
+          content,
+        })
+      } else if (item.threads) {
+        findAndUpdate({ threadid, content }, item)
+      }
+    })
+  }
+
+  findAndUpdate({ threadid, content }, forum)
+
+  log('Add reply', { forumid, threadid, content })
+
+  handleEdit(wikitext)
+}
+
+/**
+ * @function handleEdit 将forumEl转换为wikitext并发布
+ * @param {Object} forumEl
+ */
+function handleEdit(forumEl) {
+  log('Make edit', forumEl, {
+    pageName: forumEl[0].meta.pageName,
+    forumsNum: forumEl.length,
   })
 }
 
-function addReply({ forumEl, forumid = '1', threadid }) {}
-
 module.exports = {
   addReply,
+  newReply: addReply,
   addThread,
+  newThread: addThread,
   updateThread,
   // deleteThread,
 }
