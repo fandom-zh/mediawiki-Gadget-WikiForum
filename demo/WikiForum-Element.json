@@ -1,43 +1,44 @@
-[
-  {
-    "id": "1",
+{
+  "forumid": "1",
+  "meta": {
+    "pageName": "Forum:Demo",
     "title": "Forum Topic 1",
-    "depthMax": 3,
-    "threads": [
-      {
-        "id": "1",
-        "content": "I am first thread!",
-        "meta": {
-          "timePublish": "2020-12-27T8:08:00.000Z",
-          "userAuthor": "User1"
-        }
-      },
-      {
-        "id": "2",
-        "content": "I am second",
-        "meta": {
-          "timePublish": "2020-12-27T8:08:01.000Z",
-          "userAuthor": "User2"
-        },
-        "threads": [
-          {
-            "id": "2-1",
-            "content": "I am the reply in the second thread",
-            "meta": {
-              "timePublish": "2020-12-27T8:08:02.000Z",
-              "userAuthor": "User3"
-            }
-          }
-        ]
-      },
-      {
-        "id": "3",
-        "content": "I am third",
-        "meta": {
-          "timePublish": "2020-12-27T8:08:03.000Z",
-          "userAuthor": "User4"
-        }
+    "depthMax": 3
+  },
+  "threads": [
+    {
+      "threadid": "1",
+      "content": "I am the first thread!\n\nHello, WikiForum. WikiForum provide a front-end structured discussion page with JavaScript.",
+      "meta": {
+        "userAuthor": "User1",
+        "timePublish": "2020-12-27T08:08:00.000Z"
       }
-    ]
-  }
-]
+    },
+    {
+      "threadid": "2",
+      "content": "Oh, cool. I am the second floor~",
+      "meta": {
+        "userAuthor": "User2",
+        "timePublish": "2020-12-27T08:08:01.000Z"
+      },
+      "threads": [
+        {
+          "threadid": "2-1",
+          "content": "I am the reply in the second floor.",
+          "meta": {
+            "userAuthor": "User3",
+            "timePublish": "2020-12-27T08:08:02.000Z"
+          }
+        }
+      ]
+    },
+    {
+      "threadid": "3",
+      "content": "<span style=\"font-size: large\">And also, you can using wikitext in the forum:</span>\n\n'''bold''' ''italic'' <del>line-through</del>\n\n[[Link]] https://example.com\n\n* List 1\n* List 2\n* List 3\n\n Quote block\n\n[[File:Example.jpg|thumb|left|This is a image]]",
+      "meta": {
+        "userAuthor": "User4",
+        "timePublish": "2020-12-27T08:08:03.000Z"
+      }
+    }
+  ]
+}

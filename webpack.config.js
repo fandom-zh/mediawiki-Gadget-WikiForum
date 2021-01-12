@@ -27,6 +27,7 @@ module.exports = {
   entry: {
     'WikiForum.core': './index.js',
     'WikiForum.theme.default': './theme/default.js',
+    'WikiForum.theme.fandom': './theme/fandom.js',
     'WikiForum.loader.default': './loader/default.js',
   },
   target: ['web', 'es5'],

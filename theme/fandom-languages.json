@@ -1,0 +1,16 @@
+{
+  "en": {
+    "add-thread-label": "Reply to the topic",
+    "date-format": "dd/MM/yyyy hh:mm:ss",
+    "reply-btn": "reply",
+    "submit-btn": "submit",
+    "user-last": "Modified by"
+  },
+  "zh-hans": {
+    "add-thread-label": "回复楼主",
+    "date-format": "yyyy年M月d日 hh:mm:ss",
+    "reply-btn": "回复",
+    "submit-btn": "发送",
+    "user-last": "修改者"
+  }
+}
