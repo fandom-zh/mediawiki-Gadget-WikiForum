@@ -1,4 +1,17 @@
-const settings = window.WikiForumDefaultTheme || {}
+// Theme settings
+const settings = $.extend(
+  {},
+  {
+    loadStyle: true,
+    adminGroup: ['sysop'],
+    adminUser: [],
+    depthMax: 3,
+    enableNewForum: false,
+    enableModify: true,
+    enableDelete: true,
+  },
+  window.WikiForumDefaultTheme
+)
 
 // Import style
 if (settings.loadStyle !== false) {
@@ -13,16 +26,12 @@ importArticle({
   type: 'script',
   article: 'u:dev:MediaWiki:I18n-js/code.js',
 })
-mw.hook('dev.i18n').add(function(i18no) {
+mw.hook('dev.i18n').add(function (i18no) {
   i18no.loadMessages('WikiForum-theme-default').then(main)
 })
 
 // function main
 function main(i18n) {
-  function _msg(...params) {
-    return i18n.msg(...params).parse()
-  }
-
   /**
    * @function theme.default 标准的官方主题
    * @param {Object} ctx
@@ -31,6 +40,12 @@ function main(i18n) {
    * @param {Function} next
    */
   mw.hook('WikiForum.theme').add(next => {
+    function _msg(...params) {
+      return i18n.msg(...params).parse()
+    }
+
+    const conf = mw.config.get()
+
     // 全论坛容器
     var allForumsContainer = ctx => {
       return $('<div>', { class: 'wiki-forum-all-container' })
@@ -60,13 +75,9 @@ function main(i18n) {
         class: 'forum-id-link',
         text: '#' + threadid,
         href: `#${htmlId}`,
-      }).click(function(e) {
+      }).click(function (e) {
         e.preventDefault()
-        window.history.pushState(
-          null,
-          null,
-          window.location.href.split('#')[0] + '#' + htmlId
-        )
+        window.history.pushState(null, null, '#' + htmlId)
         const $block = $('#' + htmlId)
         $('html,body').animate({ scrollTop: $block.offset().top - 100 }, 500)
       })
@@ -79,7 +90,7 @@ function main(i18n) {
           }),
           userLast === userAuthor
             ? ''
-            : $('<i>', { text: ` (${_msg('user-last')}：${userLast})` })
+            : $('<i>', { text: ` (${_msg('user-last')}: ${userLast})` })
         )
       )
       var $content = $('<div>', { class: 'forum-content', html: content })
@@ -106,12 +117,17 @@ function main(i18n) {
             $userLink
           ),
           $content,
-          $('<div>', { class: 'forum-after' }).append($timeArea)
+          $('<div>', { class: 'forum-after' }).append(
+            $timeArea,
+            reactionContainer(ctx)
+          )
         )
       } else {
         // 普通帖子
-        const { forumid, _forum, fn } = ctx
+        const { $root, $container, forumid, _forum, fn } = ctx
         var $replyArea = newReplyArea({
+          $root,
+          $container,
           forumEl: _forum,
           forumid,
           threadid,
@@ -129,13 +145,14 @@ function main(i18n) {
                   class: 'reply-btn',
                   href: 'javascript:;',
                   text: _msg('reply-btn'),
-                }).click(function(e) {
+                }).click(function (e) {
                   $replyArea.show()
                   $(this).hide()
                 })
               ),
               $replyArea
-            )
+            ),
+            reactionContainer(ctx)
           )
         )
       }
@@ -143,6 +160,8 @@ function main(i18n) {
 
     // 新回复容器
     var newReplyArea = ctx => {
+      const { $root, forumEl, forumid, threadid } = ctx
+
       var $container = $('<div>', {
         class: 'forum-new-reply-area',
       })
@@ -150,13 +169,13 @@ function main(i18n) {
       var $submitBtn = $('<button>', {
         text: _msg('reply-btn'),
         class: 'forum-submit-btn',
-      }).click(function() {
+      }).click(function () {
         var content = $textArea.val()
         if (!content) return
 
         $container.addClass('forum-loading')
-        const { forumEl, forumid, threadid } = ctx
         ctx.fn.updater.addReply({
+          $root,
           forumEl,
           content,
           forumid,
@@ -176,7 +195,7 @@ function main(i18n) {
 
     // 新帖子容器
     var newThreadArea = ctx => {
-      const { _forum, forumid } = ctx
+      const { $root, _forum, forumid } = ctx
 
       var $container = $('<div>', {
         class: 'forum-new-thread-area',
@@ -185,16 +204,12 @@ function main(i18n) {
       var $submitBtn = $('<button>', {
         text: _msg('submit-btn'),
         class: 'forum-submit-btn',
-      }).click(function() {
+      }).click(function () {
         var content = $textArea.val()
         if (!content) return
 
         $container.addClass('forum-loading')
-        ctx.fn.updater.addThread({
-          forumEl: _forum,
-          forumid,
-          content,
-        })
+        ctx.fn.updater.addThread({ $root, forumEl: _forum, forumid, content })
       })
 
       $container.append(
@@ -204,6 +219,54 @@ function main(i18n) {
           $('<div>').append($submitBtn)
         )
       )
+
+      return $container
+    }
+
+    // 点赞容器
+    var reactionContainer = ctx => {
+      const { _forum, forumid, threadid, meta, fn } = ctx
+
+      const $container = $('<div>', { class: 'forum-reaction' })
+
+      // Like btn
+      let likeList = meta.reactionLike || ''
+      if (likeList) {
+        likeList = likeList.split('|')
+      } else {
+        likeList = []
+      }
+      let likeTotal = likeList.length
+      let isLike = likeList.includes(conf.wgUserName)
+
+      $likeBtn = $('<a>', {
+        href: 'javascript:;',
+        class: 'reaction-like',
+        text: `👍(${likeTotal})`,
+        title: isLike
+          ? _msg('reaction-like-remove')
+          : _msg('reaction-like-add'),
+      })
+        .addClass(isLike ? 'is-like' : 'not-like')
+        .click(function () {
+          $container.addClass('forum-loading')
+          if (isLike) {
+            let index = likeList.indexOf(conf.wgUserName)
+            if (index > -1) likeList.splice(index, 1)
+          } else {
+            likeList.push(conf.wgUserName)
+          }
+          likeList.sort()
+          likeList = likeList.join('|')
+          fn.updater.updateThread({
+            forumEl: _forum,
+            forumid,
+            threadid,
+            meta: { reactionLike: likeList },
+          })
+        })
+
+      $container.append($likeBtn)
 
       return $container
     }
@@ -223,11 +286,9 @@ function main(i18n) {
     }
 
     var afterAllForums = ctx => {
-      return newForumContainer(ctx)
-    }
-
-    var handleLoading = container => {
-      $(container).addClass('forum-loading')
+      return $('<div>', { class: 'after-all-forums' }).append(
+        newForumContainer(ctx)
+      )
     }
 
     // @function dateFormat
@@ -268,7 +329,6 @@ function main(i18n) {
         afterAllForums,
         afterForum,
         noForumContainer,
-        handleLoading,
       })
   })
 }

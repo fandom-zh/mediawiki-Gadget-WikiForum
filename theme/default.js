@@ -1,3 +1,26 @@
+// Theme settings
+const settings = $.extend(
+  {},
+  {
+    loadStyle: true,
+    adminGroup: ['sysop'],
+    adminUser: [],
+    depthMax: 3,
+    enableNewForum: false,
+    enableModify: true,
+    enableDelete: true,
+  },
+  window.WikiForumDefaultTheme
+)
+
+// Import style
+if (settings.loadStyle !== false) {
+  mw.loader.load(
+    'https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.theme.default.css',
+    'text/css'
+  )
+}
+
 /**
  * @function theme.default 标准的官方主题
  * @param {Object} ctx
@@ -6,6 +29,25 @@
  * @param {Function} next
  */
 mw.hook('WikiForum.theme').add(next => {
+  // function _msg(...params) {
+  //   return i18n.msg(...params).parse()
+  // }
+  function _msg(i) {
+    const list = {
+      'add-thread-label': '回复楼主',
+      'date-format': 'yyyy年M月d日 hh:mm:ss',
+      'reaction-like-add': '给这个帖子点赞',
+      'reaction-like-remove': '取消点赞这个帖子',
+      'reaction-like-total': '有$1名用户赞了这个帖子',
+      'reply-btn': '回复',
+      'submit-btn': '发送',
+      'user-last': '修改者',
+    }
+    return list[i] || `{WikiForum-${i}}`
+  }
+
+  const conf = mw.config.get()
+
   // 全论坛容器
   var allForumsContainer = ctx => {
     return $('<div>', { class: 'wiki-forum-all-container' })
@@ -35,13 +77,9 @@ mw.hook('WikiForum.theme').add(next => {
       class: 'forum-id-link',
       text: '#' + threadid,
       href: `#${htmlId}`,
-    }).click(function(e) {
+    }).click(function (e) {
       e.preventDefault()
-      window.history.pushState(
-        null,
-        null,
-        window.location.href.split('#')[0] + '#' + htmlId
-      )
+      window.history.pushState(null, null, '#' + htmlId)
       const $block = $('#' + htmlId)
       $('html,body').animate({ scrollTop: $block.offset().top - 100 }, 500)
     })
@@ -54,14 +92,14 @@ mw.hook('WikiForum.theme').add(next => {
         }),
         userLast === userAuthor
           ? ''
-          : $('<i>', { text: '（修改者：' + userLast + '）' })
+          : $('<i>', { text: ` (${_msg('user-last')}: ${userLast})` })
       )
     )
     var $content = $('<div>', { class: 'forum-content', html: content })
     var $timeArea = $('<div>', { class: 'post-time' }).append(
       $('<i>', {
         class: 'post-date timePublish',
-        text: dateFormat('yyyy年M月d日 hh:mm:ss', new Date(timePublish)),
+        text: dateFormat(_msg('date-format'), new Date(timePublish)),
       })
     )
 
@@ -81,12 +119,17 @@ mw.hook('WikiForum.theme').add(next => {
           $userLink
         ),
         $content,
-        $('<div>', { class: 'forum-after' }).append($timeArea)
+        $('<div>', { class: 'forum-after' }).append(
+          $timeArea,
+          reactionContainer(ctx)
+        )
       )
     } else {
       // 普通帖子
-      const { forumid, _forum, fn } = ctx
+      const { $root, $container, forumid, _forum, fn } = ctx
       var $replyArea = newReplyArea({
+        $root,
+        $container,
         forumEl: _forum,
         forumid,
         threadid,
@@ -103,14 +146,15 @@ mw.hook('WikiForum.theme').add(next => {
               $('<a>', {
                 class: 'reply-btn',
                 href: 'javascript:;',
-                text: '回复',
-              }).click(function(e) {
+                text: _msg('reply-btn'),
+              }).click(function (e) {
                 $replyArea.show()
                 $(this).hide()
               })
             ),
             $replyArea
-          )
+          ),
+          reactionContainer(ctx)
         )
       )
     }
@@ -118,20 +162,22 @@ mw.hook('WikiForum.theme').add(next => {
 
   // 新回复容器
   var newReplyArea = ctx => {
+    const { $root, forumEl, forumid, threadid } = ctx
+
     var $container = $('<div>', {
       class: 'forum-new-reply-area',
     })
     var $textArea = $('<textarea>', { class: 'forum-textarea' })
     var $submitBtn = $('<button>', {
-      text: '回复',
+      text: _msg('reply-btn'),
       class: 'forum-submit-btn',
-    }).click(function() {
+    }).click(function () {
       var content = $textArea.val()
       if (!content) return
 
       $container.addClass('forum-loading')
-      const { forumEl, forumid, threadid } = ctx
       ctx.fn.updater.addReply({
+        $root,
         forumEl,
         content,
         forumid,
@@ -151,34 +197,76 @@ mw.hook('WikiForum.theme').add(next => {
 
   // 新帖子容器
   var newThreadArea = ctx => {
-    const { _forum, forumid } = ctx
+    const { $root, _forum, forumid } = ctx
 
     var $container = $('<div>', {
       class: 'forum-new-thread-area',
     })
     var $textArea = $('<textarea>', { class: 'forum-textarea' })
     var $submitBtn = $('<button>', {
-      text: '发送',
+      text: _msg('submit-btn'),
       class: 'forum-submit-btn',
-    }).click(function() {
+    }).click(function () {
       var content = $textArea.val()
       if (!content) return
 
       $container.addClass('forum-loading')
-      ctx.fn.updater.addThread({
-        forumEl: _forum,
-        forumid,
-        content,
-      })
+      ctx.fn.updater.addThread({ $root, forumEl: _forum, forumid, content })
     })
 
     $container.append(
-      $('<strong>', { text: '回复楼主' }),
+      $('<strong>', { text: _msg('add-thread-label') }),
       $('<label>', { class: 'forum-input-container' }).append(
         $('<div>').append($textArea),
         $('<div>').append($submitBtn)
       )
     )
+
+    return $container
+  }
+
+  // 点赞容器
+  var reactionContainer = ctx => {
+    const { _forum, forumid, threadid, meta, fn } = ctx
+
+    const $container = $('<div>', { class: 'forum-reaction' })
+
+    // Like btn
+    let likeList = meta.reactionLike || ''
+    if (likeList) {
+      likeList = likeList.split('|')
+    } else {
+      likeList = []
+    }
+    let likeTotal = likeList.length
+    let isLike = likeList.includes(conf.wgUserName)
+
+    $likeBtn = $('<a>', {
+      href: 'javascript:;',
+      class: 'reaction-like',
+      text: `👍(${likeTotal})`,
+      title: isLike ? _msg('reaction-like-remove') : _msg('reaction-like-add'),
+    })
+      .addClass(isLike ? 'is-like' : 'not-like')
+      .click(function () {
+        $container.addClass('forum-loading')
+        if (isLike) {
+          let index = likeList.indexOf(conf.wgUserName)
+          if (index > -1) likeList.splice(index, 1)
+        } else {
+          likeList.push(conf.wgUserName)
+        }
+        likeList.sort()
+        likeList = likeList.join('|')
+        fn.updater.updateThread({
+          forumEl: _forum,
+          forumid,
+          threadid,
+          meta: { reactionLike: likeList },
+        })
+      })
+
+    $container.append($likeBtn)
 
     return $container
   }
@@ -198,11 +286,9 @@ mw.hook('WikiForum.theme').add(next => {
   }
 
   var afterAllForums = ctx => {
-    return newForumContainer(ctx)
-  }
-
-  var handleLoading = container => {
-    $(container).addClass('forum-loading')
+    return $('<div>', { class: 'after-all-forums' }).append(
+      newForumContainer(ctx)
+    )
   }
 
   // @function dateFormat
@@ -243,14 +329,5 @@ mw.hook('WikiForum.theme').add(next => {
       afterAllForums,
       afterForum,
       noForumContainer,
-      handleLoading,
     })
 })
-
-// Import style
-if (window.WikiForumDefaultThemeStyle !== false) {
-  mw.loader.load(
-    'https://proj.wjghj.cn/Gadget-WikiForum/dist/WikiForum.theme.default.css',
-    'text/css'
-  )
-}

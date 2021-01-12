@@ -58,6 +58,20 @@ borderGreen = green
         font-size: small
         color: #888888
 
+      .forum-reaction
+        .reaction-like
+          &.not-like
+            filter: grayscale(1)
+
+            &:hover
+              filter: grayscale(0)
+
+          &.is-like
+            font-weight: bold
+
+            &:hover
+              text-decoration: line-through
+
     // 回复框
     .forum-input-container
       display: flex

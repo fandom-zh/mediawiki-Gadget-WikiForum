@@ -40,37 +40,48 @@ function getMeta(ctx) {
 }
 
 // 递归全部主题
-function renderAllForums({ Obj, theme }) {
+function renderAllForums({ Obj, theme, $root }) {
   log('开始渲染全部论坛')
-  $root = theme.allForumsContainer()
   const { html } = Obj
+  let $allForums = theme.allForumsContainer()
 
   $.each(html, (index, forum) => {
     log('递归渲染主题', `${index + 1}/${html.length}`)
-    $root.append(
+    $allForums.append(
       renderForum({
+        $root,
         _forum: Obj,
         forumMeta: forum.meta,
         forumid: forum.forumid,
         forum,
         theme,
       }),
-      theme.afterAllForums ? theme.afterAllForums() : ''
+      theme.afterAllForums
+        ? theme.afterAllForums({
+            $root,
+            $container: $allForums,
+            _forum: Obj,
+            forumMeta: forum.meta,
+            forumid: forum.forumid,
+            fn,
+          })
+        : ''
     )
   })
-  return $root
+  return $allForums
 }
 
 // 渲染单个主题
 function renderForum(ctx) {
-  const { _forum, forum, forumMeta, forumid, theme } = ctx
-  log('渲染主题', { forumid })
+  const { $root, $container, _forum, forum, forumMeta, forumid, theme } = ctx
 
-  var $root = theme.forumContainer({ meta: forumMeta })
+  let $forum = theme.forumContainer({ meta: forumMeta })
 
   $.each(forum.threads, (index, thread) => {
-    $root.append(
+    $forum.append(
       renderThread({
+        $root,
+        $container: $forum,
         _forum,
         theme,
         thread,
@@ -81,21 +92,32 @@ function renderForum(ctx) {
   })
 
   if (theme.afterForum) {
-    $root.append(theme.afterForum({ _forum, forumMeta, forumid, fn }))
+    $forum.append(
+      theme.afterForum({
+        $root,
+        $container,
+        _forum,
+        forumMeta,
+        forumid,
+        fn,
+      })
+    )
   }
 
-  return $root
+  return $forum
 }
 
 // 渲染单个帖子
 function renderThread(ctx) {
-  const { _forum, theme, thread, forumMeta, forumid } = ctx
+  const { $root, $container, _forum, theme, thread, forumMeta, forumid } = ctx
   const { content, meta, threadid } = thread
 
   log('渲染贴子', { forumid, threadid })
 
   // 缓存帖子对象
   let $thread = theme.threadContainer({
+    $root,
+    $container,
     _forum,
     forumMeta,
     forumid,
@@ -123,7 +145,6 @@ const fn = {
 
 // 从页面加载内容，并渲染到根元素
 function fromPage(page = conf.wgPageName, target = '#mw-content-text') {
-  log('从页面加载信息并渲染', { page, target })
   actionGet(page).then(
     data => {
       log('成功从 API 获取源代码', page)
@@ -156,7 +177,8 @@ function toPage(Obj, target = '#mw-content-text') {
    * @param {Functon} theme 返回的主题渲染器
    */
   hook('WikiForum.theme').fire(theme => {
-    $(target).html(renderAllForums({ Obj, theme }))
+    const $root = $(target)
+    $root.html(renderAllForums({ Obj, theme, $root }))
     log('页面渲染完毕')
     hook('WikiForum.renderer').fire()
   })

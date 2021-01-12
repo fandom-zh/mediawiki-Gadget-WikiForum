@@ -11,10 +11,32 @@ const actionEdit = require('./actionEdit')
  */
 
 /**
+ * @function fixHTML 检查字符串的HTML标签是否匹配，wikitext是否闭合
+ * @param {String} str
+ */
+function fixHTML(str) {
+  // Trying to fix wikitext
+  var openTable = str.match(/\{\|/g)
+  openTable = openTable ? openTable.length : 0
+  var closeTable = str.match(/\n\|\}/g)
+  closeTable = closeTable ? closeTable.length : 0
+
+  for (let i = 0; i < openTable - closeTable; i++) {
+    str += '\n|}'
+  }
+
+  // fix HTML
+  const div = document.createElement('container')
+  div.innerHTML = str
+  str = div.innerHTML
+  return str
+}
+
+/**
  * @function handleEdit 处理forumEl并发布
  * @param {Object} forumEl
  */
-function handleEdit(forumEl, summary) {
+function handleEdit({ $root, forumEl, summary }) {
   const pageName = forumEl[0].meta.pageName
   const wikitext = parseAllForums(forumEl)
 
@@ -30,9 +52,9 @@ function handleEdit(forumEl, summary) {
       }
       log('更新论坛成功', ret)
       const { fromPage } = require('./renderer')
-      fromPage(pageName)
+      fromPage(pageName, $root)
     },
-    err => error
+    err => error(err)
   )
 }
 
@@ -99,7 +121,7 @@ ${indentStr}<!-- start thread#${threadid || 'latest'} -->
 ${indentStr}<div class="forum-thread" ${metaList}>
 ${indentStr}  <div class="forum-content">
 <!-- start content -->
-${content}
+${fixHTML(content)}
 <!-- end content -->
 ${indentStr}  </div>${reply}
 ${indentStr}</div>
@@ -141,39 +163,52 @@ function isComplex(id, depthMax) {
 /**
  * @function updateThread 编辑内容
  */
-function updateThread({ forumEl, forumid = '1', threadid, content }) {
+function updateThread({
+  forumEl,
+  forumid = '1',
+  threadid,
+  content,
+  meta = {},
+  $root,
+}) {
   const { wikitext } = forumEl
   // 将 id 调整为程序可读的 index
   forumid = Number(forumid)
   forumid--
   const forum = wikitext[forumid]
 
-  function findAndUpdate({ threadid, content }, base) {
+  function findAndUpdate({ threadid, content, meta = {} }, base) {
     var allThreads = base.threads
     $.each(allThreads, (index, item) => {
       if (item.threadid === threadid) {
-        item.content = content
-        item.meta.userLast = conf.wgUserName
-        item.meta.timeModify = timeStamp()
+        if (content) {
+          item.content = content
+          item.meta.userLast = conf.wgUserName
+          item.meta.timeModify = timeStamp()
+        }
+        if (meta) {
+          item.meta = $.extend({}, item.meta, meta)
+        }
       } else if (item.threads) {
         findAndUpdate({ threadid, content }, item)
       }
     })
   }
 
-  findAndUpdate({ threadid, content }, forum)
+  findAndUpdate({ threadid, meta, content }, forum)
 
   log('Update thread', { forumid, threadid, content })
-  handleEdit(
-    wikitext,
-    `[WikiForum] Modify forum#${forumid} > thread#${threadid}`
-  )
+  handleEdit({
+    $root,
+    forumEl: wikitext,
+    summary: `[WikiForum] Modify forum#${forumid} > thread#${threadid}`,
+  })
 }
 
 /**
  * @function addThread 盖新楼，回复楼主
  */
-function addThread({ forumEl, forumid, content }) {
+function addThread({ forumEl, forumid, content, $root }) {
   const { wikitext } = forumEl
   forumid = Number(forumid)
   forumid--
@@ -190,13 +225,17 @@ function addThread({ forumEl, forumid, content }) {
 
   log('Add thread', { forumid, content })
 
-  handleEdit(wikitext, `[WikiForum] Add thread to forum#${forumid}`)
+  handleEdit({
+    $root,
+    forumEl: wikitext,
+    summary: `[WikiForum] Add thread to forum#${forumid}`,
+  })
 }
 
 /**
  * @function addReply 新回复，回复层主
  */
-function addReply({ forumEl, forumid = '1', threadid, content }) {
+function addReply({ forumEl, forumid = '1', threadid, content, $root }) {
   const { wikitext } = forumEl
   // 给楼主回复其实就是盖新楼
   if (threadid === '1') {
@@ -232,10 +271,11 @@ function addReply({ forumEl, forumid = '1', threadid, content }) {
 
   log('Add reply', { forumid, threadid, content })
 
-  handleEdit(
-    wikitext,
-    `[WikiForum] Add reply to forum#${forumid} > thread#${threadid}`
-  )
+  handleEdit({
+    $root,
+    forumEl: wikitext,
+    summary: `[WikiForum] Add reply to forum#${forumid} > thread#${threadid}`,
+  })
 }
 
 module.exports = {
