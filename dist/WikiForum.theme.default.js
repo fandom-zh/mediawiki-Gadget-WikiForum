@@ -53,9 +53,10 @@ mw.hook('WikiForum.theme').add(function (next) {
       href: "#".concat(htmlId)
     }).click(function (e) {
       e.preventDefault();
+      window.history.pushState(null, null, window.location.href.split('#')[0] + '#' + htmlId);
       var $block = $('#' + htmlId);
       $('html,body').animate({
-        scrollTop: $block.offset().top
+        scrollTop: $block.offset().top - 100
       }, 500);
     });
     var $userLink = $('<div>', {
@@ -105,7 +106,8 @@ mw.hook('WikiForum.theme').add(function (next) {
         fn: fn
       });
       return $('<div>', {
-        "class": 'forum-thread'
+        "class": 'forum-thread',
+        id: htmlId
       }).append($('<div>', {
         "class": 'forum-before'
       }).append($idLink, $userLink), $content, $('<div>', {
@@ -127,6 +129,9 @@ mw.hook('WikiForum.theme').add(function (next) {
 
 
   var newReplyArea = function newReplyArea(ctx) {
+    var $container = $('<div>', {
+      "class": 'forum-new-reply-area'
+    });
     var $textArea = $('<textarea>', {
       "class": 'forum-textarea'
     });
@@ -136,6 +141,7 @@ mw.hook('WikiForum.theme').add(function (next) {
     }).click(function () {
       var content = $textArea.val();
       if (!content) return;
+      $container.addClass('forum-loading');
       var forumEl = ctx.forumEl,
           forumid = ctx.forumid,
           threadid = ctx.threadid;
@@ -146,9 +152,7 @@ mw.hook('WikiForum.theme').add(function (next) {
         threadid: threadid
       });
     });
-    var $container = $('<div>', {
-      "class": 'forum-new-reply-area'
-    }).append($('<label>', {
+    $container.append($('<label>', {
       "class": 'forum-input-container'
     }).append($('<div>').append($textArea), $('<div>').append($submitBtn)));
     return $container;
@@ -158,6 +162,9 @@ mw.hook('WikiForum.theme').add(function (next) {
   var newThreadArea = function newThreadArea(ctx) {
     var _forum = ctx._forum,
         forumid = ctx.forumid;
+    var $container = $('<div>', {
+      "class": 'forum-new-thread-area'
+    });
     var $textArea = $('<textarea>', {
       "class": 'forum-textarea'
     });
@@ -167,15 +174,14 @@ mw.hook('WikiForum.theme').add(function (next) {
     }).click(function () {
       var content = $textArea.val();
       if (!content) return;
+      $container.addClass('forum-loading');
       ctx.fn.updater.addThread({
         forumEl: _forum,
         forumid: forumid,
         content: content
       });
     });
-    var $container = $('<div>', {
-      "class": 'forum-new-thread-area'
-    }).append($('<strong>', {
+    $container.append($('<strong>', {
       text: '回复楼主'
     }), $('<label>', {
       "class": 'forum-input-container'

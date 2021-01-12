@@ -11,6 +11,33 @@
 /******/ (function() { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./module/actionEdit.js":
+/*!******************************!*\
+  !*** ./module/actionEdit.js ***!
+  \******************************/
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+var _require = __webpack_require__(/*! ./mw */ "./module/mw.js"),
+    api = _require.api,
+    conf = _require.conf,
+    editToken = _require.editToken;
+
+module.exports = function (_ref) {
+  var title = _ref.title,
+      text = _ref.text,
+      summary = _ref.summary;
+  return $.post(api, {
+    format: 'json',
+    action: 'edit',
+    token: editToken,
+    title: title,
+    text: text,
+    summary: summary
+  });
+};
+
+/***/ }),
+
 /***/ "./module/actionGet.js":
 /*!*****************************!*\
   !*** ./module/actionGet.js ***!
@@ -88,7 +115,7 @@ module.exports = {
 module.exports = {
   api: mw.util.wikiScript('api'),
   conf: mw.config.get(),
-  editToken: mw.user.tokens.get('editToken'),
+  editToken: mw.user.tokens.get('csrfToken'),
   hook: mw.hook,
   util: mw.util
 };
@@ -180,8 +207,9 @@ function getThreads(thread) {
 
 function getContent(thread) {
   var $thread = $(thread);
-  var $content = $thread.find('> .forum-content').html() || '';
-  return $content;
+  var content = $thread.find('> .forum-content').html() || '';
+  content = content.trim().replace(/^<!--\s*?start\s+?content\s*?-->/, '').replace(/<!--\s*?end\s+?content\s*?-->$/, '').replace(/^\n/, '').replace(/\n$/, '');
+  return content;
 }
 /**
  * @function getMeta 获取帖子的源信息
@@ -502,62 +530,144 @@ var _require = __webpack_require__(/*! ./mw */ "./module/mw.js"),
     conf = _require.conf;
 
 var _require2 = __webpack_require__(/*! ./log */ "./module/log.js"),
-    log = _require2.log;
+    log = _require2.log,
+    error = _require2.error;
 
-function newThreadStruc(_ref) {
-  var meta = _ref.meta,
-      content = _ref.content,
-      _ref$reply = _ref.reply,
-      reply = _ref$reply === void 0 ? '' : _ref$reply;
-  // 将 fooBar 转换为 foo-bar 的形式
-  $.each(meta, function (key, val) {
-    var newKey = key.replace(/(.*)([A-Z])(.*)/g, '$1-$2$3').toLowerCase();
-    meta[newKey] = val;
-    delete meta[key];
-  }); // meta 转换为字符串
+var actionEdit = __webpack_require__(/*! ./actionEdit */ "./module/actionEdit.js");
+/**
+ * @module updater 更新器
+ *
+ * @description
+ * 为了避免老版本jQuery的XSS漏洞
+ * forumEl->wikitext的过程采用String拼接的方式
+ */
 
-  var metaList = [];
-  $.each(meta, function (key, val) {
-    metaList.push("data-".concat(key, "=\"").concat(val, "\""));
+/**
+ * @function handleEdit 处理forumEl并发布
+ * @param {Object} forumEl
+ */
+
+
+function handleEdit(forumEl, summary) {
+  var pageName = forumEl[0].meta.pageName;
+  var wikitext = parseAllForums(forumEl);
+  actionEdit({
+    title: pageName,
+    text: wikitext,
+    summary: summary
+  }).then(function (ret) {
+    if (ret.error || ret.errors) {
+      error(ret.error || ret.errors);
+      return;
+    }
+
+    log('更新论坛成功', ret);
+
+    var _require3 = __webpack_require__(/*! ./renderer */ "./module/renderer.js"),
+        fromPage = _require3.fromPage;
+
+    fromPage(pageName);
+  }, function (err) {
+    return error;
   });
-  metaList = metaList.join(' ');
-  var html = "<!-- thread -->\n<div class=\"forum-thread\" ".concat(metaList, ">\n<div class=\"forum-content\"></div>").concat(reply ? '\n' + reply : '', "\n</div>\n<!-- /thread -->");
+}
+/**
+ * @function parseAllForums
+ */
+
+
+function parseAllForums(forumEl) {
+  var html = '';
+  $.each(forumEl, function (index, forum) {
+    html += parseForum(forum);
+  });
+  html = "<!--\n - WikiForum Container\n - \n - Total Forums: ".concat(forumEl.length, "\n - Last modiflied: ").concat(timeStamp(), "\n - Last user: ").concat(conf.wgUserName, "\n -\n - DO NOT EDIT DIRECTLY\n -->\n").concat(html, "\n\n<!-- end WikiForum -->");
   return html;
 }
 
-function hasThread(thread, id) {
-  var res = false;
-  if (thread.id === id) ret = true;
-  return res;
+function parseForum(forum) {
+  var forumid = forum.forumid,
+      meta = forum.meta,
+      threads = forum.threads;
+  var metaList = getMeta(meta);
+  var threadList = '';
+  $.each(threads, function (index, thread) {
+    threadList += parseThread(thread);
+  });
+  var html = "\n<!-- start forum#".concat(forumid || 'latest', " -->\n<div class=\"wiki-forum\" ").concat(metaList, ">\n").concat(threadList, "\n</div>\n<!-- end forum#").concat(forumid || 'latest', " -->");
+  return html;
 }
 
-function isComplex() {}
+function parseThread(thread) {
+  var indent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+  var threadid = thread.threadid,
+      meta = thread.meta,
+      threads = thread.threads,
+      content = thread.content;
+  var metaList = getMeta(meta);
+  var indentStr = '';
 
-function makeWikitext(obj) {}
+  for (var i = 0; i < indent; i++) {
+    indentStr += '  ';
+  }
+
+  var reply = '';
+
+  if (threads && threads.length > 0) {
+    $.each(threads, function (index, thread) {
+      reply += parseThread(thread, indent + 1);
+    });
+  }
+
+  var html = "\n".concat(indentStr, "<!-- start thread#").concat(threadid || 'latest', " -->\n").concat(indentStr, "<div class=\"forum-thread\" ").concat(metaList, ">\n").concat(indentStr, "  <div class=\"forum-content\">\n<!-- start content -->\n").concat(content, "\n<!-- end content -->\n").concat(indentStr, "  </div>").concat(reply, "\n").concat(indentStr, "</div>\n").concat(indentStr, "<!-- end thread#").concat(threadid || 'latest', " -->\n");
+  return html;
+}
+/**
+ * @function getMeta 将meta转换为 data-*="" 字符串
+ * @param {Object} meta jQuery.data()
+ */
+
+
+function getMeta(meta) {
+  // 将 fooBar 转换为 foo-bar 的形式
+  var metaList = [];
+  $.each(meta, function (key, val) {
+    var newKey = 'data-' + key.replace(/(.*)([A-Z])(.*)/g, '$1-$2$3').toLowerCase();
+    metaList.push("".concat(newKey, "=\"").concat(val, "\""));
+  });
+  metaList = metaList.join(' ');
+  return metaList;
+}
 
 function timeStamp() {
   return new Date().toISOString();
+}
+
+function isComplex(id, depthMax) {
+  id = id.split('-');
+  if (id.length > depthMax) return true;
+  return false;
 }
 /**
  * @function updateThread 编辑内容
  */
 
 
-function updateThread(_ref2) {
-  var forumEl = _ref2.forumEl,
-      _ref2$forumid = _ref2.forumid,
-      forumid = _ref2$forumid === void 0 ? '1' : _ref2$forumid,
-      threadid = _ref2.threadid,
-      content = _ref2.content;
+function updateThread(_ref) {
+  var forumEl = _ref.forumEl,
+      _ref$forumid = _ref.forumid,
+      forumid = _ref$forumid === void 0 ? '1' : _ref$forumid,
+      threadid = _ref.threadid,
+      content = _ref.content;
   var wikitext = forumEl.wikitext; // 将 id 调整为程序可读的 index
 
   forumid = Number(forumid);
   forumid--;
   var forum = wikitext[forumid];
 
-  function findAndUpdate(_ref3, base) {
-    var threadid = _ref3.threadid,
-        content = _ref3.content;
+  function findAndUpdate(_ref2, base) {
+    var threadid = _ref2.threadid,
+        content = _ref2.content;
     var allThreads = base.threads;
     $.each(allThreads, function (index, item) {
       if (item.threadid === threadid) {
@@ -582,17 +692,17 @@ function updateThread(_ref2) {
     threadid: threadid,
     content: content
   });
-  handleEdit(wikitext);
+  handleEdit(wikitext, "[WikiForum] Modify forum#".concat(forumid, " > thread#").concat(threadid));
 }
 /**
  * @function addThread 盖新楼，回复楼主
  */
 
 
-function addThread(_ref4) {
-  var forumEl = _ref4.forumEl,
-      forumid = _ref4.forumid,
-      content = _ref4.content;
+function addThread(_ref3) {
+  var forumEl = _ref3.forumEl,
+      forumid = _ref3.forumid,
+      content = _ref3.content;
   var wikitext = forumEl.wikitext;
   forumid = Number(forumid);
   forumid--;
@@ -609,19 +719,19 @@ function addThread(_ref4) {
     forumid: forumid,
     content: content
   });
-  handleEdit(wikitext);
+  handleEdit(wikitext, "[WikiForum] Add thread to forum#".concat(forumid));
 }
 /**
  * @function addReply 新回复，回复层主
  */
 
 
-function addReply(_ref5) {
-  var forumEl = _ref5.forumEl,
-      _ref5$forumid = _ref5.forumid,
-      forumid = _ref5$forumid === void 0 ? '1' : _ref5$forumid,
-      threadid = _ref5.threadid,
-      content = _ref5.content;
+function addReply(_ref4) {
+  var forumEl = _ref4.forumEl,
+      _ref4$forumid = _ref4.forumid,
+      forumid = _ref4$forumid === void 0 ? '1' : _ref4$forumid,
+      threadid = _ref4.threadid,
+      content = _ref4.content;
   var wikitext = forumEl.wikitext; // 给楼主回复其实就是盖新楼
 
   if (threadid === '1') {
@@ -636,9 +746,9 @@ function addReply(_ref5) {
   forumid--;
   var forum = wikitext[forumid];
 
-  function findAndUpdate(_ref6, base) {
-    var threadid = _ref6.threadid,
-        content = _ref6.content;
+  function findAndUpdate(_ref5, base) {
+    var threadid = _ref5.threadid,
+        content = _ref5.content;
     var allThreads = base.threads;
     $.each(allThreads, function (index, item) {
       if (item.threadid === threadid) {
@@ -670,19 +780,7 @@ function addReply(_ref5) {
     threadid: threadid,
     content: content
   });
-  handleEdit(wikitext);
-}
-/**
- * @function handleEdit 将forumEl转换为wikitext并发布
- * @param {Object} forumEl
- */
-
-
-function handleEdit(forumEl) {
-  log('Make edit', forumEl, {
-    pageName: forumEl[0].meta.pageName,
-    forumsNum: forumEl.length
-  });
+  handleEdit(wikitext, "[WikiForum] Add reply to forum#".concat(forumid, " > thread#").concat(threadid));
 }
 
 module.exports = {

@@ -38,6 +38,9 @@
   right: 0.1rem;
   top: 0.1rem;
 }
+.wiki-forum-all-container .wiki-forum .forum-after {
+  clear: both;
+}
 .wiki-forum-all-container .wiki-forum .forum-after .forum-new-reply-area {
   display: none;
 }
