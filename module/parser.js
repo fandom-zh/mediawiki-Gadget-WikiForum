@@ -65,8 +65,15 @@ function getThreads(thread) {
  */
 function getContent(thread) {
   var $thread = $(thread)
-  var $content = $thread.find('> .forum-content').html() || ''
-  return $content
+  var content = $thread.find('> .forum-content').html() || ''
+  content = content
+    .trim()
+    .replace(/^<!--\s*?start\s+?content\s*?-->/, '')
+    .replace(/<!--\s*?end\s+?content\s*?-->$/, '')
+    .replace(/^\n/, '')
+    .replace(/\n$/, '')
+
+  return content
 }
 
 /**

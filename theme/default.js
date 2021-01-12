@@ -37,8 +37,13 @@ mw.hook('WikiForum.theme').add(next => {
       href: `#${htmlId}`,
     }).click(function(e) {
       e.preventDefault()
+      window.history.pushState(
+        null,
+        null,
+        window.location.href.split('#')[0] + '#' + htmlId
+      )
       const $block = $('#' + htmlId)
-      $('html,body').animate({ scrollTop: $block.offset().top }, 500)
+      $('html,body').animate({ scrollTop: $block.offset().top - 100 }, 500)
     })
     var $userLink = $('<div>', { class: 'forum-user' }).append(
       $('<span>', { class: 'forum-user-link' }).append(
@@ -88,7 +93,7 @@ mw.hook('WikiForum.theme').add(next => {
         fn,
       })
 
-      return $('<div>', { class: 'forum-thread' }).append(
+      return $('<div>', { class: 'forum-thread', id: htmlId }).append(
         $('<div>', { class: 'forum-before' }).append($idLink, $userLink),
         $content,
         $('<div>', { class: 'forum-after' }).append(
@@ -113,6 +118,9 @@ mw.hook('WikiForum.theme').add(next => {
 
   // 新回复容器
   var newReplyArea = ctx => {
+    var $container = $('<div>', {
+      class: 'forum-new-reply-area',
+    })
     var $textArea = $('<textarea>', { class: 'forum-textarea' })
     var $submitBtn = $('<button>', {
       text: '回复',
@@ -120,6 +128,8 @@ mw.hook('WikiForum.theme').add(next => {
     }).click(function() {
       var content = $textArea.val()
       if (!content) return
+
+      $container.addClass('forum-loading')
       const { forumEl, forumid, threadid } = ctx
       ctx.fn.updater.addReply({
         forumEl,
@@ -129,9 +139,7 @@ mw.hook('WikiForum.theme').add(next => {
       })
     })
 
-    var $container = $('<div>', {
-      class: 'forum-new-reply-area',
-    }).append(
+    $container.append(
       $('<label>', { class: 'forum-input-container' }).append(
         $('<div>').append($textArea),
         $('<div>').append($submitBtn)
@@ -145,6 +153,9 @@ mw.hook('WikiForum.theme').add(next => {
   var newThreadArea = ctx => {
     const { _forum, forumid } = ctx
 
+    var $container = $('<div>', {
+      class: 'forum-new-thread-area',
+    })
     var $textArea = $('<textarea>', { class: 'forum-textarea' })
     var $submitBtn = $('<button>', {
       text: '发送',
@@ -152,6 +163,8 @@ mw.hook('WikiForum.theme').add(next => {
     }).click(function() {
       var content = $textArea.val()
       if (!content) return
+
+      $container.addClass('forum-loading')
       ctx.fn.updater.addThread({
         forumEl: _forum,
         forumid,
@@ -159,9 +172,7 @@ mw.hook('WikiForum.theme').add(next => {
       })
     })
 
-    var $container = $('<div>', {
-      class: 'forum-new-thread-area',
-    }).append(
+    $container.append(
       $('<strong>', { text: '回复楼主' }),
       $('<label>', { class: 'forum-input-container' }).append(
         $('<div>').append($textArea),

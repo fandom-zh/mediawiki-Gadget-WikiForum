@@ -1,42 +1,141 @@
 const { conf } = require('./mw')
-const { log } = require('./log')
+const { log, error } = require('./log')
+const actionEdit = require('./actionEdit')
 
-function newThreadStruc({ meta, content, reply = '' }) {
-  // 将 fooBar 转换为 foo-bar 的形式
-  $.each(meta, (key, val) => {
-    let newKey = key.replace(/(.*)([A-Z])(.*)/g, '$1-$2$3').toLowerCase()
-    meta[newKey] = val
-    delete meta[key]
+/**
+ * @module updater 更新器
+ *
+ * @description
+ * 为了避免老版本jQuery的XSS漏洞
+ * forumEl->wikitext的过程采用String拼接的方式
+ */
+
+/**
+ * @function handleEdit 处理forumEl并发布
+ * @param {Object} forumEl
+ */
+function handleEdit(forumEl, summary) {
+  const pageName = forumEl[0].meta.pageName
+  const wikitext = parseAllForums(forumEl)
+
+  actionEdit({
+    title: pageName,
+    text: wikitext,
+    summary,
+  }).then(
+    ret => {
+      if (ret.error || ret.errors) {
+        error(ret.error || ret.errors)
+        return
+      }
+      log('更新论坛成功', ret)
+      const { fromPage } = require('./renderer')
+      fromPage(pageName)
+    },
+    err => error
+  )
+}
+
+/**
+ * @function parseAllForums
+ */
+function parseAllForums(forumEl) {
+  var html = ''
+  $.each(forumEl, (index, forum) => {
+    html += parseForum(forum)
   })
 
-  // meta 转换为字符串
-  var metaList = []
-  $.each(meta, (key, val) => {
-    metaList.push(`data-${key}="${val}"`)
-  })
-  metaList = metaList.join(' ')
+  html = `<!--
+ - WikiForum Container
+ - 
+ - Total Forums: ${forumEl.length}
+ - Last modiflied: ${timeStamp()}
+ - Last user: ${conf.wgUserName}
+ -
+ - DO NOT EDIT DIRECTLY
+ -->
+${html}
 
-  var html = `<!-- thread -->
-<div class="forum-thread" ${metaList}>
-<div class="forum-content"></div>${reply ? '\n' + reply : ''}
-</div>
-<!-- /thread -->`
+<!-- end WikiForum -->`
 
   return html
 }
 
-function hasThread(thread, id) {
-  var res = false
-  if (thread.id === id) ret = true
-  return res
+function parseForum(forum) {
+  const { forumid, meta, threads } = forum
+  const metaList = getMeta(meta)
+
+  var threadList = ''
+  $.each(threads, (index, thread) => {
+    threadList += parseThread(thread)
+  })
+
+  const html = `
+<!-- start forum#${forumid || 'latest'} -->
+<div class="wiki-forum" ${metaList}>
+${threadList}
+</div>
+<!-- end forum#${forumid || 'latest'} -->`
+
+  return html
 }
 
-function isComplex() {}
+function parseThread(thread, indent = 0) {
+  const { threadid, meta, threads, content } = thread
+  const metaList = getMeta(meta)
 
-function makeWikitext(obj) {}
+  var indentStr = ''
+  for (let i = 0; i < indent; i++) indentStr += '  '
+
+  var reply = ''
+  if (threads && threads.length > 0) {
+    $.each(threads, (index, thread) => {
+      reply += parseThread(thread, indent + 1)
+    })
+  }
+
+  var html = `
+${indentStr}<!-- start thread#${threadid || 'latest'} -->
+${indentStr}<div class="forum-thread" ${metaList}>
+${indentStr}  <div class="forum-content">
+<!-- start content -->
+${content}
+<!-- end content -->
+${indentStr}  </div>${reply}
+${indentStr}</div>
+${indentStr}<!-- end thread#${threadid || 'latest'} -->
+`
+
+  return html
+}
+
+/**
+ * @function getMeta 将meta转换为 data-*="" 字符串
+ * @param {Object} meta jQuery.data()
+ */
+function getMeta(meta) {
+  // 将 fooBar 转换为 foo-bar 的形式
+  var metaList = []
+
+  $.each(meta, (key, val) => {
+    let newKey =
+      'data-' + key.replace(/(.*)([A-Z])(.*)/g, '$1-$2$3').toLowerCase()
+    metaList.push(`${newKey}="${val}"`)
+  })
+
+  metaList = metaList.join(' ')
+
+  return metaList
+}
 
 function timeStamp() {
   return new Date().toISOString()
+}
+
+function isComplex(id, depthMax) {
+  id = id.split('-')
+  if (id.length > depthMax) return true
+  return false
 }
 
 /**
@@ -65,7 +164,10 @@ function updateThread({ forumEl, forumid = '1', threadid, content }) {
   findAndUpdate({ threadid, content }, forum)
 
   log('Update thread', { forumid, threadid, content })
-  handleEdit(wikitext)
+  handleEdit(
+    wikitext,
+    `[WikiForum] Modify forum#${forumid} > thread#${threadid}`
+  )
 }
 
 /**
@@ -88,7 +190,7 @@ function addThread({ forumEl, forumid, content }) {
 
   log('Add thread', { forumid, content })
 
-  handleEdit(wikitext)
+  handleEdit(wikitext, `[WikiForum] Add thread to forum#${forumid}`)
 }
 
 /**
@@ -130,18 +232,10 @@ function addReply({ forumEl, forumid = '1', threadid, content }) {
 
   log('Add reply', { forumid, threadid, content })
 
-  handleEdit(wikitext)
-}
-
-/**
- * @function handleEdit 将forumEl转换为wikitext并发布
- * @param {Object} forumEl
- */
-function handleEdit(forumEl) {
-  log('Make edit', forumEl, {
-    pageName: forumEl[0].meta.pageName,
-    forumsNum: forumEl.length,
-  })
+  handleEdit(
+    wikitext,
+    `[WikiForum] Add reply to forum#${forumid} > thread#${threadid}`
+  )
 }
 
 module.exports = {

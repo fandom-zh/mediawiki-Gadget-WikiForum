@@ -1,6 +1,6 @@
 {
   "name": "mediawiki-wikiforum",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "Provide a front-end structured discussion page with JavaScript.",
   "main": "index.js",
   "repository": "https://github.com/Wjghj-Project/Gadget-WikiForum.git",
