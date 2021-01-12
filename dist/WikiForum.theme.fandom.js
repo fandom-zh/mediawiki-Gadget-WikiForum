@@ -12,7 +12,16 @@
 /*!*************************!*\
   !*** ./theme/fandom.js ***!
   \*************************/
-var settings = window.WikiForumDefaultTheme || {}; // Import style
+// Theme settings
+var settings = $.extend({}, {
+  loadStyle: true,
+  adminGroup: ['sysop'],
+  adminUser: [],
+  depthMax: 3,
+  enableNewForum: false,
+  enableModify: true,
+  enableDelete: true
+}, window.WikiForumDefaultTheme); // Import style
 
 if (settings.loadStyle !== false) {
   importArticle({
@@ -31,9 +40,6 @@ mw.hook('dev.i18n').add(function (i18no) {
 }); // function main
 
 function main(i18n) {
-  function _msg() {
-    return i18n.msg.apply(i18n, arguments).parse();
-  }
   /**
    * @function theme.default 标准的官方主题
    * @param {Object} ctx
@@ -41,10 +47,13 @@ function main(i18n) {
    *
    * @param {Function} next
    */
-
-
   mw.hook('WikiForum.theme').add(function (next) {
-    // 全论坛容器
+    function _msg() {
+      return i18n.msg.apply(i18n, arguments).parse();
+    }
+
+    var conf = mw.config.get(); // 全论坛容器
+
     var allForumsContainer = function allForumsContainer(ctx) {
       return $('<div>', {
         "class": 'wiki-forum-all-container'
@@ -77,7 +86,7 @@ function main(i18n) {
         href: "#".concat(htmlId)
       }).click(function (e) {
         e.preventDefault();
-        window.history.pushState(null, null, window.location.href.split('#')[0] + '#' + htmlId);
+        window.history.pushState(null, null, '#' + htmlId);
         var $block = $('#' + htmlId);
         $('html,body').animate({
           scrollTop: $block.offset().top - 100
@@ -92,7 +101,7 @@ function main(i18n) {
         text: userAuthor,
         href: mw.util.getUrl('User:' + userAuthor)
       }), userLast === userAuthor ? '' : $('<i>', {
-        text: " (".concat(_msg('user-last'), "\uFF1A").concat(userLast, ")")
+        text: " (".concat(_msg('user-last'), ": ").concat(userLast, ")")
       })));
       var $content = $('<div>', {
         "class": 'forum-content',
@@ -117,13 +126,17 @@ function main(i18n) {
           text: ctx.forumMeta.title || '[UNTITLED] Forum Topic #' + forumid
         }), $idLink, $userLink), $content, $('<div>', {
           "class": 'forum-after'
-        }).append($timeArea));
+        }).append($timeArea, reactionContainer(ctx)));
       } else {
         // 普通帖子
-        var _forumid = ctx.forumid,
+        var $root = ctx.$root,
+            $container = ctx.$container,
+            _forumid = ctx.forumid,
             _forum = ctx._forum,
             fn = ctx.fn;
         var $replyArea = newReplyArea({
+          $root: $root,
+          $container: $container,
           forumEl: _forum,
           forumid: _forumid,
           threadid: threadid,
@@ -147,12 +160,16 @@ function main(i18n) {
         }).click(function (e) {
           $replyArea.show();
           $(this).hide();
-        })), $replyArea)));
+        })), $replyArea), reactionContainer(ctx)));
       }
     }; // 新回复容器
 
 
     var newReplyArea = function newReplyArea(ctx) {
+      var $root = ctx.$root,
+          forumEl = ctx.forumEl,
+          forumid = ctx.forumid,
+          threadid = ctx.threadid;
       var $container = $('<div>', {
         "class": 'forum-new-reply-area'
       });
@@ -166,10 +183,8 @@ function main(i18n) {
         var content = $textArea.val();
         if (!content) return;
         $container.addClass('forum-loading');
-        var forumEl = ctx.forumEl,
-            forumid = ctx.forumid,
-            threadid = ctx.threadid;
         ctx.fn.updater.addReply({
+          $root: $root,
           forumEl: forumEl,
           content: content,
           forumid: forumid,
@@ -184,7 +199,8 @@ function main(i18n) {
 
 
     var newThreadArea = function newThreadArea(ctx) {
-      var _forum = ctx._forum,
+      var $root = ctx.$root,
+          _forum = ctx._forum,
           forumid = ctx.forumid;
       var $container = $('<div>', {
         "class": 'forum-new-thread-area'
@@ -200,6 +216,7 @@ function main(i18n) {
         if (!content) return;
         $container.addClass('forum-loading');
         ctx.fn.updater.addThread({
+          $root: $root,
           forumEl: _forum,
           forumid: forumid,
           content: content
@@ -210,6 +227,57 @@ function main(i18n) {
       }), $('<label>', {
         "class": 'forum-input-container'
       }).append($('<div>').append($textArea), $('<div>').append($submitBtn)));
+      return $container;
+    }; // 点赞容器
+
+
+    var reactionContainer = function reactionContainer(ctx) {
+      var _forum = ctx._forum,
+          forumid = ctx.forumid,
+          threadid = ctx.threadid,
+          meta = ctx.meta,
+          fn = ctx.fn;
+      var $container = $('<div>', {
+        "class": 'forum-reaction'
+      }); // Like btn
+
+      var likeList = meta.reactionLike || '';
+
+      if (likeList) {
+        likeList = likeList.split('|');
+      } else {
+        likeList = [];
+      }
+
+      var likeTotal = likeList.length;
+      var isLike = likeList.includes(conf.wgUserName);
+      $likeBtn = $('<a>', {
+        href: 'javascript:;',
+        "class": 'reaction-like',
+        text: "\uD83D\uDC4D(".concat(likeTotal, ")"),
+        title: isLike ? _msg('reaction-like-remove') : _msg('reaction-like-add')
+      }).addClass(isLike ? 'is-like' : 'not-like').click(function () {
+        $container.addClass('forum-loading');
+
+        if (isLike) {
+          var index = likeList.indexOf(conf.wgUserName);
+          if (index > -1) likeList.splice(index, 1);
+        } else {
+          likeList.push(conf.wgUserName);
+        }
+
+        likeList.sort();
+        likeList = likeList.join('|');
+        fn.updater.updateThread({
+          forumEl: _forum,
+          forumid: forumid,
+          threadid: threadid,
+          meta: {
+            reactionLike: likeList
+          }
+        });
+      });
+      $container.append($likeBtn);
       return $container;
     }; // 新论坛容器
 
@@ -230,11 +298,9 @@ function main(i18n) {
     };
 
     var afterAllForums = function afterAllForums(ctx) {
-      return newForumContainer(ctx);
-    };
-
-    var handleLoading = function handleLoading(container) {
-      $(container).addClass('forum-loading');
+      return $('<div>', {
+        "class": 'after-all-forums'
+      }).append(newForumContainer(ctx));
     }; // @function dateFormat
 
 
@@ -276,8 +342,7 @@ function main(i18n) {
       threadContainer: threadContainer,
       afterAllForums: afterAllForums,
       afterForum: afterForum,
-      noForumContainer: noForumContainer,
-      handleLoading: handleLoading
+      noForumContainer: noForumContainer
     });
   });
 }

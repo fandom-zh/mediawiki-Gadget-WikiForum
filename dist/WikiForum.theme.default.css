@@ -48,6 +48,18 @@
   font-size: small;
   color: #888;
 }
+.wiki-forum-all-container .wiki-forum .forum-after .forum-reaction .reaction-like.not-like {
+  filter: grayscale(1);
+}
+.wiki-forum-all-container .wiki-forum .forum-after .forum-reaction .reaction-like.not-like:hover {
+  filter: grayscale(0);
+}
+.wiki-forum-all-container .wiki-forum .forum-after .forum-reaction .reaction-like.is-like {
+  font-weight: bold;
+}
+.wiki-forum-all-container .wiki-forum .forum-after .forum-reaction .reaction-like.is-like:hover {
+  text-decoration: line-through;
+}
 .wiki-forum-all-container .wiki-forum .forum-input-container {
   display: flex;
   position: relative;
