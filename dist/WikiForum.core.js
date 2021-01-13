@@ -115,7 +115,7 @@ module.exports = {
 module.exports = {
   api: mw.util.wikiScript('api'),
   conf: mw.config.get(),
-  editToken: mw.user.tokens.get('csrfToken'),
+  editToken: mw.user.tokens.get('csrfToken') || mw.user.tokens.get('editToken'),
   hook: mw.hook,
   util: mw.util
 };
