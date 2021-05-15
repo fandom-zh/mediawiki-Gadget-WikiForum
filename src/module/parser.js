@@ -1,5 +1,3 @@
-const { log } = require('./log')
-
 /**
  * @function parseForums 从源代码解析可能存在的全部主题
  * @param {Element} code
@@ -31,8 +29,8 @@ function parseForums(code, title) {
 function parseThreads(forum, prefix = '') {
   var $forum = $(forum)
   if (prefix) prefix += '-'
-  var threads = []
-  $threads = getThreads($forum)
+  let threads = []
+  let $threads = getThreads($forum)
   $.each($threads, (index, thread) => {
     var threadObj = {
       threadid: String(prefix + (index + 1)),
@@ -85,28 +83,6 @@ function getMeta(thread) {
 }
 
 /**
- * @function getUser 获取帖子发帖者信息
- * @param {Element} thread
- */
-function getUser(thread) {
-  var $thread = $(thread)
-  var author = $thread.data('userAuthor') || ''
-  var last = $thread.data('userLast') || author
-  return { author, last }
-}
-
-/**
- * @function getTime 获取帖子发帖时间信息
- * @param {Element} thread
- */
-function getTime(thread) {
-  var $thread = $(thread)
-  var publish = $thread.data('timePublish') || ''
-  var modify = $thread.data('timeModify') || publish
-  return { publish, modify }
-}
-
-/**
  * @module fromApi 解析 MediaWiki API 返回的信息
  * @param {Object} data 来自 API 的结果：api.php?action=parse&prop=wikitext|text&page=<pageName>
  */
@@ -142,7 +118,7 @@ function fromApi(data) {
  * @module fromHtml 从 HTML 源代码解析
  * @param {String|Element} code
  */
-function fromHtml(code, title = '') {
+function fromHtml(code) {
   var $code = $(code)
   var forumEl = parseForums($code)
   return forumEl

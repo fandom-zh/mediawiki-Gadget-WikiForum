@@ -1,6 +1,6 @@
 {
   "name": "mediawiki-wikiforum",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Provide a front-end structured discussion page with JavaScript.",
   "main": "public/dist/core.min.js",
   "repository": "https://github.com/Fandom-zh/Gadget-WikiForum.git",
@@ -9,12 +9,14 @@
   "scripts": {
     "build": "yarn clear && webpack && MINIFY=1 webpack",
     "dev": "yarn clear && webpack --watch -o ./dev/",
+    "lint": "eslint src/**.js src/**/*.js",
     "clear": "rm -rf ./dist ./public/dist",
-    "bump": "yarn build && bump"
+    "bump": "yarn lint && yarn build && bump"
   },
   "devDependencies": {
     "@lavgup/mediawiki.js": "^1.1.0",
-    "axios": "^0.21.1"
+    "axios": "^0.21.1",
+    "eslint": "^7.26.0"
   },
   "dependencies": {
     "@babel/core": "^7.12.10",

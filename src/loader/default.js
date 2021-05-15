@@ -2,7 +2,7 @@ mw.hook('WikiForum').add(function(Core) {
   const conf = mw.config.get()
   const settings = window.WikiForumLoaderDefault || {}
 
-  const loadNS = settings.loadNS || window.WikiForumNS || []
+  let loadNS = settings.loadNS || window.WikiForumNS || []
 
   if (typeof loadNS === 'number') loadNS = [loadNS]
 

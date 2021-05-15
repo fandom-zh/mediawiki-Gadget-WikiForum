@@ -1,16 +1,16 @@
 // Theme settings
-const settings = $.extend(
-  {},
-  {
-    adminGroup: ['sysop'],
-    adminUser: [],
-    depthMax: 3,
-    enableNewForum: false,
-    enableModify: true,
-    enableDelete: true,
-  },
-  window.WikiForumDefaultTheme
-)
+// const settings = $.extend(
+//   {},
+//   {
+//     adminGroup: ['sysop'],
+//     adminUser: [],
+//     depthMax: 3,
+//     enableNewForum: false,
+//     enableModify: true,
+//     enableDelete: true,
+//   },
+//   window.WikiForumDefaultTheme
+// )
 
 // Import style
 require('./default.styl')
@@ -22,7 +22,7 @@ require('./default.styl')
  *
  * @param {Function} next
  */
-mw.hook('WikiForum.theme').add(next => {
+mw.hook('WikiForum.theme').add((next) => {
   // function _msg(...params) {
   //   return i18n.msg(...params).parse()
   // }
@@ -43,12 +43,12 @@ mw.hook('WikiForum.theme').add(next => {
   const conf = mw.config.get()
 
   // 全论坛容器
-  var allForumsContainer = ctx => {
+  var allForumsContainer = () => {
     return $('<div>', { class: 'wiki-forum-all-container' })
   }
 
   // 单论坛容器
-  var forumContainer = ctx => {
+  var forumContainer = (ctx) => {
     return $('<div>', {
       class: 'wiki-forum',
       'data-forumid': ctx.meta.id,
@@ -56,12 +56,12 @@ mw.hook('WikiForum.theme').add(next => {
   }
 
   // 帖子容器
-  var threadContainer = ctx => {
+  var threadContainer = (ctx) => {
     // 处理 meta
     const { forumid, threadid, content } = ctx
     const timePublish =
       ctx.meta.timePublish || ctx.meta.timeRelease || ctx.meta.release || ''
-    const timeModify = ctx.meta.timeModify || timePublish
+    // const timeModify = ctx.meta.timeModify || timePublish
     const userAuthor = ctx.meta.userAuthor || ctx.meta.user || 'unsigned'
     const userLast = ctx.meta.userLast || userAuthor
     const htmlId = `forum-${forumid}_thread-${threadid}`
@@ -71,7 +71,7 @@ mw.hook('WikiForum.theme').add(next => {
       class: 'forum-id-link',
       text: '#' + threadid,
       href: `#${htmlId}`,
-    }).click(function (e) {
+    }).click(function(e) {
       e.preventDefault()
       window.history.pushState(null, null, '#' + htmlId)
       const $block = $('#' + htmlId)
@@ -141,7 +141,7 @@ mw.hook('WikiForum.theme').add(next => {
                 class: 'reply-btn',
                 href: 'javascript:;',
                 text: _msg('reply-btn'),
-              }).click(function (e) {
+              }).click(function() {
                 $replyArea.show()
                 $(this).hide()
               })
@@ -155,7 +155,7 @@ mw.hook('WikiForum.theme').add(next => {
   }
 
   // 新回复容器
-  var newReplyArea = ctx => {
+  var newReplyArea = (ctx) => {
     const { $root, forumEl, forumid, threadid } = ctx
 
     var $container = $('<div>', {
@@ -165,7 +165,7 @@ mw.hook('WikiForum.theme').add(next => {
     var $submitBtn = $('<button>', {
       text: _msg('reply-btn'),
       class: 'forum-submit-btn',
-    }).click(function () {
+    }).click(function() {
       var content = $textArea.val()
       if (!content) return
 
@@ -190,7 +190,7 @@ mw.hook('WikiForum.theme').add(next => {
   }
 
   // 新帖子容器
-  var newThreadArea = ctx => {
+  var newThreadArea = (ctx) => {
     const { $root, _forum, forumid } = ctx
 
     var $container = $('<div>', {
@@ -200,7 +200,7 @@ mw.hook('WikiForum.theme').add(next => {
     var $submitBtn = $('<button>', {
       text: _msg('submit-btn'),
       class: 'forum-submit-btn',
-    }).click(function () {
+    }).click(function() {
       var content = $textArea.val()
       if (!content) return
 
@@ -220,7 +220,7 @@ mw.hook('WikiForum.theme').add(next => {
   }
 
   // 点赞容器
-  var reactionContainer = ctx => {
+  var reactionContainer = (ctx) => {
     const { _forum, forumid, threadid, meta, fn } = ctx
 
     const $container = $('<div>', { class: 'forum-reaction' })
@@ -235,14 +235,14 @@ mw.hook('WikiForum.theme').add(next => {
     let likeTotal = likeList.length
     let isLike = likeList.includes(conf.wgUserName)
 
-    $likeBtn = $('<a>', {
+    const $likeBtn = $('<a>', {
       href: 'javascript:;',
       class: 'reaction-like',
       text: `👍(${likeTotal})`,
       title: isLike ? _msg('reaction-like-remove') : _msg('reaction-like-add'),
     })
       .addClass(isLike ? 'is-like' : 'not-like')
-      .click(function () {
+      .click(function() {
         $container.addClass('forum-loading')
         if (isLike) {
           let index = likeList.indexOf(conf.wgUserName)
@@ -266,20 +266,20 @@ mw.hook('WikiForum.theme').add(next => {
   }
 
   // 新论坛容器
-  var newForumContainer = ctx => {
+  var newForumContainer = () => {
     return $('<div>').append($('<p>', { text: 'newForumContainer' }))
   }
 
   // 无论坛容器
-  var noForumContainer = ctx => {}
+  var noForumContainer = () => {}
 
-  var afterForum = ctx => {
+  var afterForum = (ctx) => {
     return $('<div>', { class: 'forum-thread forum-add-thread' }).append(
       newThreadArea(ctx)
     )
   }
 
-  var afterAllForums = ctx => {
+  var afterAllForums = (ctx) => {
     return $('<div>', { class: 'after-all-forums' }).append(
       newForumContainer(ctx)
     )

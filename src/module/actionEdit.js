@@ -1,4 +1,4 @@
-const { api, conf, editToken } = require('./mw')
+const { api, editToken } = require('./mw')
 
 module.exports = ({ title, text, summary }) => {
   return $.post(api, {

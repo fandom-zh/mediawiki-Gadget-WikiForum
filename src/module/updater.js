@@ -145,8 +145,8 @@ function getMeta(meta) {
 
   // 确保data的顺序是固定的
   var metaList1 = {}
-  var metaListKeys = Object.keys(a).sort()
-  for (key of metaListKeys) {
+  var metaListKeys = Object.keys(meta).sort()
+  for (let key of metaListKeys) {
     metaList1[key] = metaList[key]
   }
   metaList = metaList1
@@ -160,6 +160,7 @@ function timeStamp() {
   return new Date().toISOString()
 }
 
+// eslint-disable-next-line no-unused-vars
 function isComplex(id, depthMax) {
   id = id.split('-')
   if (id.length > depthMax) return true

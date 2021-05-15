@@ -1,6 +1,6 @@
 const { fromApi } = require('./parser')
 const actionGet = require('./actionGet')
-const { util, hook, conf } = require('./mw')
+const { hook, conf } = require('./mw')
 const { log, error } = require('./log')
 
 // 获取帖子元素
@@ -63,13 +63,13 @@ function renderAllForums({ forumEl, theme, $root }) {
         }),
         theme.afterAllForums
           ? theme.afterAllForums({
-              $root,
-              $container: $allForums,
-              _forum: forumEl,
-              forumMeta: forum.meta,
-              forumid: forum.forumid,
-              fn,
-            })
+            $root,
+            $container: $allForums,
+            _forum: forumEl,
+            forumMeta: forum.meta,
+            forumid: forum.forumid,
+            fn,
+          })
           : ''
       )
     })
@@ -153,12 +153,12 @@ const fn = {
 // 从页面加载内容，并渲染到根元素
 function fromPage(page = conf.wgPageName, target = '#mw-content-text') {
   actionGet(page).then(
-    data => {
+    (data) => {
       log('成功从 API 获取源代码', page)
       var Obj = fromApi(data)
       toPage(Obj, target)
     },
-    err => {
+    (err) => {
       error('从 API 获取源代码失败', { page, err })
     }
   )
@@ -167,7 +167,7 @@ function fromPage(page = conf.wgPageName, target = '#mw-content-text') {
 // 渲染返回HTML对象
 function toHtml(forumEl) {
   log('渲染并返回 HTML')
-  mw.hook('WikiForum.theme').fire(theme => {
+  mw.hook('WikiForum.theme').fire((theme) => {
     return renderAllForums({ forumEl, theme })
   })
 }
@@ -183,7 +183,7 @@ function toPage({ forumEl, target = '#mw-content-text' }) {
    * 触发主题函数
    * @param {Functon} theme 返回的主题渲染器
    */
-  hook('WikiForum.theme').fire(theme => {
+  hook('WikiForum.theme').fire((theme) => {
     const $root = $(target)
     $root.html(renderAllForums({ forumEl, theme, $root }))
     log('页面渲染完毕')
