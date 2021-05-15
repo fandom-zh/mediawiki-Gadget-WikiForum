@@ -1,6 +1,6 @@
 /**
  * @name WikiForum/theme/fandom
- * @version 3.0.1 (Core version)
+ * @version 3.0.2 (Core version)
  * @author 机智的小鱼君 <dragon-fish@qq.com>
  * @desc Provide a front-end structured discussion page with JavaScript.
  *       Similar to Community Feed and support wikitext.
@@ -581,16 +581,21 @@ var __webpack_exports__ = {};
   !*** ./src/theme/fandom.js ***!
   \*****************************/
 // Theme settings
-var settings = $.extend({}, {
-  adminGroup: ['sysop'],
-  adminUser: [],
-  depthMax: 3,
-  enableNewForum: false,
-  enableModify: true,
-  enableDelete: true
-}, window.WikiForumDefaultTheme); // Import style
-
+// const settings = $.extend(
+//   {},
+//   {
+//     adminGroup: ['sysop'],
+//     adminUser: [],
+//     depthMax: 3,
+//     enableNewForum: false,
+//     enableModify: true,
+//     enableDelete: true,
+//   },
+//   window.WikiForumDefaultTheme
+// )
+// Import style
 __webpack_require__(/*! ./default.styl */ "./src/theme/default.styl"); // Wait i18n-js
+// eslint-disable-next-line no-undef
 
 
 importArticle({
@@ -616,7 +621,7 @@ function main(i18n) {
 
     var conf = mw.config.get(); // 全论坛容器
 
-    var allForumsContainer = function allForumsContainer(ctx) {
+    var allForumsContainer = function allForumsContainer() {
       return $('<div>', {
         "class": 'wiki-forum-all-container'
       });
@@ -636,8 +641,8 @@ function main(i18n) {
       var forumid = ctx.forumid,
           threadid = ctx.threadid,
           content = ctx.content;
-      var timePublish = ctx.meta.timePublish || ctx.meta.timeRelease || ctx.meta.release || '';
-      var timeModify = ctx.meta.timeModify || timePublish;
+      var timePublish = ctx.meta.timePublish || ctx.meta.timeRelease || ctx.meta.release || ''; // const timeModify = ctx.meta.timeModify || timePublish
+
       var userAuthor = ctx.meta.userAuthor || ctx.meta.user || 'unsigned';
       var userLast = ctx.meta.userLast || userAuthor;
       var htmlId = "forum-".concat(forumid, "_thread-").concat(threadid); // 缓存组件
@@ -719,7 +724,7 @@ function main(i18n) {
           "class": 'reply-btn',
           href: 'javascript:;',
           text: _msg('reply-btn')
-        }).click(function (e) {
+        }).click(function () {
           $replyArea.show();
           $(this).hide();
         })), $replyArea), reactionContainer(ctx)));
@@ -813,7 +818,7 @@ function main(i18n) {
 
       var likeTotal = likeList.length;
       var isLike = likeList.includes(conf.wgUserName);
-      $likeBtn = $('<a>', {
+      var $likeBtn = $('<a>', {
         href: 'javascript:;',
         "class": 'reaction-like',
         text: "\uD83D\uDC4D(".concat(likeTotal, ")"),
@@ -844,14 +849,14 @@ function main(i18n) {
     }; // 新论坛容器
 
 
-    var newForumContainer = function newForumContainer(ctx) {
+    var newForumContainer = function newForumContainer() {
       return $('<div>').append($('<p>', {
         text: 'newForumContainer'
       }));
     }; // 无论坛容器
 
 
-    var noForumContainer = function noForumContainer(ctx) {};
+    var noForumContainer = function noForumContainer() {};
 
     var afterForum = function afterForum(ctx) {
       return $('<div>', {

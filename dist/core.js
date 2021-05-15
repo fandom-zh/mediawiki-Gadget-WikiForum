@@ -1,6 +1,6 @@
 /**
  * @name WikiForum/core
- * @version 3.0.1 (Core version)
+ * @version 3.0.2 (Core version)
  * @author 机智的小鱼君 <dragon-fish@qq.com>
  * @desc Provide a front-end structured discussion page with JavaScript.
  *       Similar to Community Feed and support wikitext.
@@ -20,7 +20,6 @@
 
 var _require = __webpack_require__(/*! ./mw */ "./src/module/mw.js"),
     api = _require.api,
-    conf = _require.conf,
     editToken = _require.editToken;
 
 module.exports = function (_ref) {
@@ -129,17 +128,13 @@ module.exports = {
 /*!******************************!*\
   !*** ./src/module/parser.js ***!
   \******************************/
-/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+/***/ (function(module) {
 
-var _require = __webpack_require__(/*! ./log */ "./src/module/log.js"),
-    log = _require.log;
 /**
  * @function parseForums 从源代码解析可能存在的全部主题
  * @param {Element} code
  * @param {String} title
  */
-
-
 function parseForums(code, title) {
   var $root = $(code);
   var forums = [];
@@ -171,7 +166,7 @@ function parseThreads(forum) {
   var $forum = $(forum);
   if (prefix) prefix += '-';
   var threads = [];
-  $threads = getThreads($forum);
+  var $threads = getThreads($forum);
   $.each($threads, function (index, thread) {
     var threadObj = {
       threadid: String(prefix + (index + 1)),
@@ -221,36 +216,6 @@ function getMeta(thread) {
   return $data;
 }
 /**
- * @function getUser 获取帖子发帖者信息
- * @param {Element} thread
- */
-
-
-function getUser(thread) {
-  var $thread = $(thread);
-  var author = $thread.data('userAuthor') || '';
-  var last = $thread.data('userLast') || author;
-  return {
-    author: author,
-    last: last
-  };
-}
-/**
- * @function getTime 获取帖子发帖时间信息
- * @param {Element} thread
- */
-
-
-function getTime(thread) {
-  var $thread = $(thread);
-  var publish = $thread.data('timePublish') || '';
-  var modify = $thread.data('timeModify') || publish;
-  return {
-    publish: publish,
-    modify: modify
-  };
-}
-/**
  * @module fromApi 解析 MediaWiki API 返回的信息
  * @param {Object} data 来自 API 的结果：api.php?action=parse&prop=wikitext|text&page=<pageName>
  */
@@ -286,7 +251,6 @@ function fromApi(data) {
 
 
 function fromHtml(code) {
-  var title = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
   var $code = $(code);
   var forumEl = parseForums($code);
   return forumEl;
@@ -311,7 +275,6 @@ var _require = __webpack_require__(/*! ./parser */ "./src/module/parser.js"),
 var actionGet = __webpack_require__(/*! ./actionGet */ "./src/module/actionGet.js");
 
 var _require2 = __webpack_require__(/*! ./mw */ "./src/module/mw.js"),
-    util = _require2.util,
     hook = _require2.hook,
     conf = _require2.conf;
 
@@ -686,14 +649,14 @@ function getMeta(meta) {
   }); // 确保data的顺序是固定的
 
   var metaList1 = {};
-  var metaListKeys = Object.keys(a).sort();
+  var metaListKeys = Object.keys(meta).sort();
 
   var _iterator = _createForOfIteratorHelper(metaListKeys),
       _step;
 
   try {
     for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      key = _step.value;
+      var key = _step.value;
       metaList1[key] = metaList[key];
     }
   } catch (err) {
@@ -709,7 +672,8 @@ function getMeta(meta) {
 
 function timeStamp() {
   return new Date().toISOString();
-}
+} // eslint-disable-next-line no-unused-vars
+
 
 function isComplex(id, depthMax) {
   id = id.split('-');
