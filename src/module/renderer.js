@@ -40,34 +40,41 @@ function getMeta(ctx) {
 }
 
 // 递归全部主题
-function renderAllForums({ Obj, theme, $root }) {
+function renderAllForums({ forumEl, theme, $root }) {
   log('开始渲染全部论坛')
-  const { html } = Obj
+  const { html } = forumEl
   let $allForums = theme.allForumsContainer()
 
-  $.each(html, (index, forum) => {
-    log('递归渲染主题', `${index + 1}/${html.length}`)
-    $allForums.append(
-      renderForum({
-        $root,
-        _forum: Obj,
-        forumMeta: forum.meta,
-        forumid: forum.forumid,
-        forum,
-        theme,
-      }),
-      theme.afterAllForums
-        ? theme.afterAllForums({
-            $root,
-            $container: $allForums,
-            _forum: Obj,
-            forumMeta: forum.meta,
-            forumid: forum.forumid,
-            fn,
-          })
-        : ''
-    )
-  })
+  if (html.length < 1) {
+    if (theme.noForumContainer) {
+      $allForums.append(theme.noForumContainer())
+    }
+  } else {
+    $.each(html, (index, forum) => {
+      log('递归渲染主题', `${index + 1}/${html.length}`)
+      $allForums.append(
+        renderForum({
+          $root,
+          _forum: forumEl,
+          forumMeta: forum.meta,
+          forumid: forum.forumid,
+          forum,
+          theme,
+        }),
+        theme.afterAllForums
+          ? theme.afterAllForums({
+              $root,
+              $container: $allForums,
+              _forum: forumEl,
+              forumMeta: forum.meta,
+              forumid: forum.forumid,
+              fn,
+            })
+          : ''
+      )
+    })
+  }
+
   return $allForums
 }
 
@@ -170,7 +177,7 @@ function toHtml(forumEl) {
  * @param {Object} forumEl WikiForum-Element
  * @param {String|Element} target 渲染的根元素
  */
-function toPage(Obj, target = '#mw-content-text') {
+function toPage({ forumEl, target = '#mw-content-text' }) {
   log('准备渲染到页面，等待主题文件……')
   /**
    * 触发主题函数
@@ -178,7 +185,7 @@ function toPage(Obj, target = '#mw-content-text') {
    */
   hook('WikiForum.theme').fire(theme => {
     const $root = $(target)
-    $root.html(renderAllForums({ Obj, theme, $root }))
+    $root.html(renderAllForums({ forumEl, theme, $root }))
     log('页面渲染完毕')
     hook('WikiForum.renderer').fire()
   })

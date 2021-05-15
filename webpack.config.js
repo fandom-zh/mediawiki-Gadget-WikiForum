@@ -3,17 +3,20 @@
 const path = require('path')
 const webpack = require('webpack')
 const TerserPlugin = require('terser-webpack-plugin')
+const { readdirSync } = require('fs')
 
 const isMinify = process.env.MINIFY
 
+// Make banner
 const bannerText = `/**
  * @name [name]
+ * @version ${require('./package.json').version} (Core version)
  * @author 机智的小鱼君 <dragon-fish@qq.com>
- * @description Provide a front-end structured discussion page with JavaScript.
- *              Similar to Community Feed and support wikitext.
+ * @desc Provide a front-end structured discussion page with JavaScript.
+ *       Similar to Community Feed and support wikitext.
  *
  * @license MIT
- * @url https://github.com/Wjghj-Project/Gadget-WikiForum
+ * @url https://github.com/Fandom-zh/Gadget-WikiForum
  */
 `
 
@@ -23,13 +26,25 @@ const BannerPlugin = new webpack.BannerPlugin({
   banner: bannerText,
 })
 
+// Get files
+const entry = {}
+entry['core'] = './src/index.js'
+readdirSync(path.resolve(__dirname, 'src', 'theme'))
+  .filter((i) => i.endsWith('.js'))
+  .map((i) => {
+    const name = i.replace('.js', '')
+    entry[`theme/${name}`] = `./src/theme/${i}`
+  })
+readdirSync(path.resolve(__dirname, 'src', 'loader'))
+  .filter((i) => i.endsWith('.js'))
+  .map((i) => {
+    const name = i.replace('.js', '')
+    entry[`loader/${name}`] = `./src/loader/${i}`
+  })
+
+// Exports
 module.exports = {
-  entry: {
-    'WikiForum.core': './index.js',
-    'WikiForum.theme.default': './theme/default.js',
-    'WikiForum.theme.fandom': './theme/fandom.js',
-    'WikiForum.loader.default': './loader/default.js',
-  },
+  entry,
   target: ['web', 'es5'],
   context: path.resolve(__dirname),
   watchOptions: {
@@ -45,25 +60,27 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        use: {
-          loader: 'babel-loader',
-        },
+        use: [
+          {
+            loader: 'babel-loader',
+          },
+        ],
         exclude: '/node_modules/',
       },
-      // {
-      //   test: /\.styl$/,
-      //   use: [
-      //     {
-      //       loader: 'style-loader',
-      //     },
-      //     {
-      //       loader: 'css-loader',
-      //     },
-      //     {
-      //       loader: 'stylus-loader',
-      //     },
-      //   ],
-      // },
+      {
+        test: /\.styl$/,
+        use: [
+          {
+            loader: 'style-loader',
+          },
+          {
+            loader: 'css-loader',
+          },
+          {
+            loader: 'stylus-loader',
+          },
+        ],
+      },
     ],
   },
   resolve: {},

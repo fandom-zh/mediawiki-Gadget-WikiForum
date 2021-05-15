@@ -11,15 +11,13 @@ const actionEdit = require('./actionEdit')
  */
 
 /**
- * @function fixHTML 检查字符串的HTML标签是否匹配，wikitext是否闭合
+ * @function contentValidator 检查字符串的HTML标签是否匹配，wikitext是否闭合
  * @param {String} str
  */
-function fixHTML(str) {
+function contentValidator(str) {
   // Trying to fix wikitext
-  var openTable = str.match(/\{\|/g)
-  openTable = openTable ? openTable.length : 0
-  var closeTable = str.match(/\n\|\}/g)
-  closeTable = closeTable ? closeTable.length : 0
+  var openTable = (str.match(/\{\|/g) || []).length
+  var closeTable = (str.match(/\n\|\}/g) || []).length
 
   for (let i = 0; i < openTable - closeTable; i++) {
     str += '\n|}'
@@ -118,13 +116,13 @@ function parseThread(thread, indent = 0) {
 
   var html = `
 ${indentStr}<!-- start thread#${threadid || 'latest'} -->
-${indentStr}<div class="forum-thread" ${metaList}>
-${indentStr}  <div class="forum-content">
+${indentStr}<ul class="forum-thread" ${metaList}>
+${indentStr}  <li class="forum-content">
 <!-- start content -->
-${fixHTML(content)}
+${contentValidator(content)}
 <!-- end content -->
-${indentStr}  </div>${reply}
-${indentStr}</div>
+${indentStr}  </li>${reply}
+${indentStr}</ul>
 ${indentStr}<!-- end thread#${threadid || 'latest'} -->
 `
 
@@ -144,6 +142,14 @@ function getMeta(meta) {
       'data-' + key.replace(/(.*)([A-Z])(.*)/g, '$1-$2$3').toLowerCase()
     metaList.push(`${newKey}="${val}"`)
   })
+
+  // 确保data的顺序是固定的
+  var metaList1 = {}
+  var metaListKeys = Object.keys(a).sort()
+  for (key of metaListKeys) {
+    metaList1[key] = metaList[key]
+  }
+  metaList = metaList1
 
   metaList = metaList.join(' ')
 

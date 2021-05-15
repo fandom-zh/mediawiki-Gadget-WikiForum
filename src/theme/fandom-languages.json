@@ -1,0 +1,29 @@
+{
+  "en": {
+    "add-thread-label": "Reply to the topic",
+    "date-format": "dd/MM/yyyy hh:mm:ss",
+    "reaction-like-add": "Like this thread",
+    "reaction-like-remove": "Remove like from this thread",
+    "reaction-like-total": "There {{PLURAL:$1|was $1 user|were $1 users}} liked this thread",
+    "reply-btn": "reply",
+    "submit-btn": "submit",
+    "user-last": "Modified by"
+  },
+  "qqq": {
+    "add-thread-label": "",
+    "date-format": "Date format\ny - year\nM - month\nd - day\nh - hour\nm - minute\ns - second",
+    "reply-btn": "",
+    "submit-btn": "",
+    "user-last": "Context: (Modified by: <userName>)"
+  },
+  "zh-hans": {
+    "add-thread-label": "回复楼主",
+    "date-format": "yyyy年M月d日 hh:mm:ss",
+    "reaction-like-add": "给这个帖子点赞",
+    "reaction-like-remove": "取消点赞这个帖子",
+    "reaction-like-total": "有$1名用户赞了这个帖子",
+    "reply-btn": "回复",
+    "submit-btn": "发送",
+    "user-last": "修改者"
+  }
+}

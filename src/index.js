@@ -10,7 +10,7 @@ const { hook } = require('./module/mw')
 
 mw.loader.using(
   ['mediawiki.api', 'mediawiki.util', 'mediawiki.user'],
-  function() {
+  function () {
     // init global variable
     const Core = {
       parser: require('./module/parser'),
