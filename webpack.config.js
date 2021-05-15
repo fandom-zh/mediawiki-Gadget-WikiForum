@@ -9,7 +9,7 @@ const isMinify = process.env.MINIFY
 
 // Make banner
 const bannerText = `/**
- * @name [name]
+ * @name WikiForum/[name]
  * @version ${require('./package.json').version} (Core version)
  * @author 机智的小鱼君 <dragon-fish@qq.com>
  * @desc Provide a front-end structured discussion page with JavaScript.

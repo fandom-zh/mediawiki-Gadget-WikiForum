@@ -1,13 +1,23 @@
 const { readdirSync, readFileSync } = require('fs')
 const path = require('path')
 const { MediaWikiJS } = require('@lavgup/mediawiki.js')
+const { execSync } = require('child_process')
 
+// Construct bot
 const bot = new MediaWikiJS({
   url: 'https://dev.fandom.com/api.php',
   botUsername: process.env.MW_USERNAME,
   botPassword: process.env.MW_PASSWORD,
 })
 const pageBase = 'MediaWiki:WikiForum'
+
+// Get latest log
+const gitLog = execSync('git log -n 1')
+  .toString()
+  .trim()
+  .split('\n')
+  .pop()
+  .trim()
 
 // Get files
 const pageList = []
@@ -42,7 +52,7 @@ function editPage({ title, content }) {
   return bot.edit({
     title,
     content,
-    summary: '[Automatic] Sync from GitHub // 机智的小鱼君@Dev_Wiki_Updater',
+    summary: `[Automatic] ${gitLog} // Sync from GitHub`,
   })
 }
 
