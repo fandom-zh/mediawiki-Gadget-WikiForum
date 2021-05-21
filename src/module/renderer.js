@@ -61,16 +61,14 @@ function renderAllForums({ forumEl, theme, $root }) {
           forum,
           theme,
         }),
-        theme.afterAllForums
-          ? theme.afterAllForums({
-            $root,
-            $container: $allForums,
-            _forum: forumEl,
-            forumMeta: forum.meta,
-            forumid: forum.forumid,
-            fn,
-          })
-          : ''
+        theme?.afterAllForums({
+          $root,
+          $container: $allForums,
+          _forum: forumEl,
+          forumMeta: forum.meta,
+          forumid: forum.forumid,
+          fn,
+        })
       )
     })
   }
@@ -155,8 +153,8 @@ function fromPage(page = conf.wgPageName, target = '#mw-content-text') {
   actionGet(page).then(
     (data) => {
       log('成功从 API 获取源代码', page)
-      var Obj = fromApi(data)
-      toPage(Obj, target)
+      var forumEl = fromApi(data)
+      toPage({ forumEl, target })
     },
     (err) => {
       error('从 API 获取源代码失败', { page, err })
