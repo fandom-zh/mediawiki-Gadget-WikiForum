@@ -1,6 +1,6 @@
 /**
  * @name WikiForum/core
- * @version 3.0.2 (Core version)
+ * @version 3.0.3 (Core version)
  * @author 机智的小鱼君 <dragon-fish@qq.com>
  * @desc Provide a front-end structured discussion page with JavaScript.
  *       Similar to Community Feed and support wikitext.
@@ -342,14 +342,14 @@ function renderAllForums(_ref2) {
         forumid: forum.forumid,
         forum: forum,
         theme: theme
-      }), theme.afterAllForums ? theme.afterAllForums({
+      }), theme === null || theme === void 0 ? void 0 : theme.afterAllForums({
         $root: $root,
         $container: $allForums,
         _forum: forumEl,
         forumMeta: forum.meta,
         forumid: forum.forumid,
         fn: fn
-      }) : '');
+      }));
     });
   }
 
@@ -443,8 +443,11 @@ function fromPage() {
   var target = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '#mw-content-text';
   actionGet(page).then(function (data) {
     log('成功从 API 获取源代码', page);
-    var Obj = fromApi(data);
-    toPage(Obj, target);
+    var forumEl = fromApi(data);
+    toPage({
+      forumEl: forumEl,
+      target: target
+    });
   }, function (err) {
     error('从 API 获取源代码失败', {
       page: page,
