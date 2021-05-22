@@ -1,6 +1,6 @@
 /**
  * @name WikiForum/core
- * @version 3.0.3 (Core version)
+ * @version 3.0.4 (Core version)
  * @author 机智的小鱼君 <dragon-fish@qq.com>
  * @desc Provide a front-end structured discussion page with JavaScript.
  *       Similar to Community Feed and support wikitext.
@@ -511,12 +511,6 @@ module.exports = {
   \*******************************/
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
 var _require = __webpack_require__(/*! ./mw */ "./src/module/mw.js"),
     conf = _require.conf;
 
@@ -644,33 +638,12 @@ function parseThread(thread) {
 
 
 function getMeta(meta) {
-  // 将 fooBar 转换为 foo-bar 的形式
   var metaList = [];
   $.each(meta, function (key, val) {
     var newKey = 'data-' + key.replace(/(.*)([A-Z])(.*)/g, '$1-$2$3').toLowerCase();
     metaList.push("".concat(newKey, "=\"").concat(val, "\""));
-  }); // 确保data的顺序是固定的
-
-  var metaList1 = {};
-  var metaListKeys = Object.keys(meta).sort();
-
-  var _iterator = _createForOfIteratorHelper(metaListKeys),
-      _step;
-
-  try {
-    for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      var key = _step.value;
-      metaList1[key] = metaList[key];
-    }
-  } catch (err) {
-    _iterator.e(err);
-  } finally {
-    _iterator.f();
-  }
-
-  metaList = metaList1;
-  metaList = metaList.join(' ');
-  return metaList;
+  });
+  return metaList.sort().join(' ');
 }
 
 function timeStamp() {
