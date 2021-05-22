@@ -43,7 +43,7 @@ function handleEdit({ $root, forumEl, summary }) {
     text: wikitext,
     summary,
   }).then(
-    ret => {
+    (ret) => {
       if (ret.error || ret.errors) {
         error(ret.error || ret.errors)
         return
@@ -52,7 +52,7 @@ function handleEdit({ $root, forumEl, summary }) {
       const { fromPage } = require('./renderer')
       fromPage(pageName, $root)
     },
-    err => error(err)
+    (err) => error(err)
   )
 }
 
@@ -134,26 +134,13 @@ ${indentStr}<!-- end thread#${threadid || 'latest'} -->
  * @param {Object} meta jQuery.data()
  */
 function getMeta(meta) {
-  // 将 fooBar 转换为 foo-bar 的形式
-  var metaList = []
-
+  const metaList = []
   $.each(meta, (key, val) => {
     let newKey =
       'data-' + key.replace(/(.*)([A-Z])(.*)/g, '$1-$2$3').toLowerCase()
     metaList.push(`${newKey}="${val}"`)
   })
-
-  // 确保data的顺序是固定的
-  var metaList1 = {}
-  var metaListKeys = Object.keys(meta).sort()
-  for (let key of metaListKeys) {
-    metaList1[key] = metaList[key]
-  }
-  metaList = metaList1
-
-  metaList = metaList.join(' ')
-
-  return metaList
+  return metaList.sort().join(' ')
 }
 
 function timeStamp() {

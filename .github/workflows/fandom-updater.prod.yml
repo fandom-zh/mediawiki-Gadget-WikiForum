@@ -2,8 +2,7 @@ name: Fandom Dev Wiki Updater
 
 on:
   push:
-    branches:
-      - master
+    tags: ['*']
 
 jobs:
   build:
