@@ -1,6 +1,6 @@
 {
   "name": "mediawiki-wikiforum",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Provide a front-end structured discussion page with JavaScript.",
   "main": "public/dist/core.min.js",
   "repository": "https://github.com/Fandom-zh/Gadget-WikiForum.git",
