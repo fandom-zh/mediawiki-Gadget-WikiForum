@@ -1,6 +1,6 @@
 /**
  * @name WikiForum/core
- * @version 3.0.4 (Core version)
+ * @version 3.0.5 (Core version)
  * @author 机智的小鱼君 <dragon-fish@qq.com>
  * @desc Provide a front-end structured discussion page with JavaScript.
  *       Similar to Community Feed and support wikitext.
@@ -132,8 +132,8 @@ module.exports = {
 
 /**
  * @function parseForums 从源代码解析可能存在的全部主题
- * @param {Element} code
- * @param {String} title
+ * @param {Element|string} code
+ * @param {string} title
  */
 function parseForums(code, title) {
   var $root = $(code);
@@ -157,7 +157,7 @@ function parseForums(code, title) {
 /**
  * @function parseThreads 递归全部的帖子
  * @param {Element} forum
- * @param {String} prefix
+ * @param {string} prefix
  */
 
 
@@ -522,14 +522,13 @@ var actionEdit = __webpack_require__(/*! ./actionEdit */ "./src/module/actionEdi
 /**
  * @module updater 更新器
  *
- * @description
- * 为了避免老版本jQuery的XSS漏洞
- * forumEl->wikitext的过程采用String拼接的方式
+ * @desc 为了避免老版本 jQuery 的 XSS 漏洞
+ *       forumEl -> wikitext 的过程采用 string 拼接的方式
  */
 
 /**
  * @function contentValidator 检查字符串的HTML标签是否匹配，wikitext是否闭合
- * @param {String} str
+ * @param {string} str
  */
 
 
@@ -550,7 +549,7 @@ function contentValidator(str) {
 }
 /**
  * @function handleEdit 处理forumEl并发布
- * @param {Object} forumEl
+ * @param {import('../types/index').ForumElement[]} forumEl
  */
 
 
@@ -582,17 +581,24 @@ function handleEdit(_ref) {
 }
 /**
  * @function parseAllForums
+ * @param {import('../types/index').ForumElement[]} forumEl
  */
 
 
 function parseAllForums(forumEl) {
   var html = '';
-  $.each(forumEl, function (index, forum) {
+  forumEl.forEach(function (forum) {
     html += parseForum(forum);
   });
   html = "<!--\n - WikiForum Container\n - \n - Total Forums: ".concat(forumEl.length, "\n - Last modiflied: ").concat(timeStamp(), "\n - Last user: ").concat(conf.wgUserName, "\n -\n - DO NOT EDIT DIRECTLY\n -->\n").concat(html, "\n\n<!-- end WikiForum -->");
   return html;
 }
+/**
+ *
+ * @param {import('../types/index').ForumElement} forum
+ * @returns
+ */
+
 
 function parseForum(forum) {
   var forumid = forum.forumid,
@@ -606,6 +612,13 @@ function parseForum(forum) {
   var html = "\n<!-- start forum#".concat(forumid || 'latest', " -->\n<div class=\"wiki-forum\" ").concat(metaList, ">\n").concat(threadList, "\n</div>\n<!-- end forum#").concat(forumid || 'latest', " -->");
   return html;
 }
+/**
+ *
+ * @param {import('../types/index').ForumThread} thread
+ * @param {*} indent
+ * @returns
+ */
+
 
 function parseThread(thread) {
   var indent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
@@ -633,7 +646,8 @@ function parseThread(thread) {
 }
 /**
  * @function getMeta 将meta转换为 data-*="" 字符串
- * @param {Object} meta jQuery.data()
+ * @param {Record<string, any>} meta jQuery.data()
+ * @return {string}
  */
 
 
@@ -656,10 +670,6 @@ function isComplex(id, depthMax) {
   if (id.length > depthMax) return true;
   return false;
 }
-/**
- * @function updateThread 编辑内容
- */
-
 
 function updateThread(_ref2) {
   var forumEl = _ref2.forumEl,
