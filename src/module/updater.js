@@ -5,14 +5,13 @@ const actionEdit = require('./actionEdit')
 /**
  * @module updater 更新器
  *
- * @description
- * 为了避免老版本jQuery的XSS漏洞
- * forumEl->wikitext的过程采用String拼接的方式
+ * @desc 为了避免老版本 jQuery 的 XSS 漏洞
+ *       forumEl -> wikitext 的过程采用 string 拼接的方式
  */
 
 /**
  * @function contentValidator 检查字符串的HTML标签是否匹配，wikitext是否闭合
- * @param {String} str
+ * @param {string} str
  */
 function contentValidator(str) {
   // Trying to fix wikitext
@@ -32,7 +31,7 @@ function contentValidator(str) {
 
 /**
  * @function handleEdit 处理forumEl并发布
- * @param {Object} forumEl
+ * @param {import('../types/index').ForumElement[]} forumEl
  */
 function handleEdit({ $root, forumEl, summary }) {
   const pageName = forumEl[0].meta.pageName
@@ -58,10 +57,11 @@ function handleEdit({ $root, forumEl, summary }) {
 
 /**
  * @function parseAllForums
+ * @param {import('../types/index').ForumElement[]} forumEl
  */
 function parseAllForums(forumEl) {
   var html = ''
-  $.each(forumEl, (index, forum) => {
+  forumEl.forEach((forum) => {
     html += parseForum(forum)
   })
 
@@ -81,6 +81,11 @@ ${html}
   return html
 }
 
+/**
+ *
+ * @param {import('../types/index').ForumElement} forum
+ * @returns
+ */
 function parseForum(forum) {
   const { forumid, meta, threads } = forum
   const metaList = getMeta(meta)
@@ -100,6 +105,12 @@ ${threadList}
   return html
 }
 
+/**
+ *
+ * @param {import('../types/index').ForumThread} thread
+ * @param {*} indent
+ * @returns
+ */
 function parseThread(thread, indent = 0) {
   const { threadid, meta, threads, content } = thread
   const metaList = getMeta(meta)
@@ -131,7 +142,8 @@ ${indentStr}<!-- end thread#${threadid || 'latest'} -->
 
 /**
  * @function getMeta 将meta转换为 data-*="" 字符串
- * @param {Object} meta jQuery.data()
+ * @param {Record<string, any>} meta jQuery.data()
+ * @return {string}
  */
 function getMeta(meta) {
   const metaList = []
@@ -154,9 +166,6 @@ function isComplex(id, depthMax) {
   return false
 }
 
-/**
- * @function updateThread 编辑内容
- */
 function updateThread({
   forumEl,
   forumid = '1',

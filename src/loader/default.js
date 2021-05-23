@@ -11,8 +11,8 @@ mw.hook('WikiForum').add(function(Core) {
 
   if (
     loadNS.includes(conf.wgNamespaceNumber) &&
-    // $('.wiki-forum').length > 0 &&
-    conf.wgArticleId !== 0 &&
+    $('.wiki-forum').length > 0 &&
+    // conf.wgArticleId !== 0 &&
     conf.wgAction === 'view'
   ) {
     Core.renderer.fromPage(conf.wgPageName)

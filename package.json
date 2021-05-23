@@ -1,8 +1,9 @@
 {
   "name": "mediawiki-wikiforum",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "Provide a front-end structured discussion page with JavaScript.",
   "main": "public/dist/core.min.js",
+  "types": "src/types/index.d.ts",
   "repository": "https://github.com/Fandom-zh/Gadget-WikiForum.git",
   "author": "Dragon-Fish <824399619@qq.com>",
   "license": "MIT",

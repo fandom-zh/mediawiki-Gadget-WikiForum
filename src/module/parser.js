@@ -1,7 +1,7 @@
 /**
  * @function parseForums 从源代码解析可能存在的全部主题
- * @param {Element} code
- * @param {String} title
+ * @param {Element|string} code
+ * @param {string} title
  */
 function parseForums(code, title) {
   var $root = $(code)
@@ -24,7 +24,7 @@ function parseForums(code, title) {
 /**
  * @function parseThreads 递归全部的帖子
  * @param {Element} forum
- * @param {String} prefix
+ * @param {string} prefix
  */
 function parseThreads(forum, prefix = '') {
   var $forum = $(forum)
