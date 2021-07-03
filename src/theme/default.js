@@ -37,18 +37,18 @@ mw.hook('WikiForum.theme').add((next) => {
       'submit-btn': '发送',
       'user-last': '修改者',
     }
-    return list[i] || `{WikiForum-${i}}`
+    return list[i] || `(WikiForum-${i})`
   }
 
   const conf = mw.config.get()
 
   // 全论坛容器
-  var allForumsContainer = () => {
+  const allForumsContainer = () => {
     return $('<div>', { class: 'wiki-forum-all-container' })
   }
 
   // 单论坛容器
-  var forumContainer = (ctx) => {
+  const forumContainer = (ctx) => {
     return $('<div>', {
       class: 'wiki-forum',
       'data-forumid': ctx.meta.id,
@@ -56,7 +56,7 @@ mw.hook('WikiForum.theme').add((next) => {
   }
 
   // 帖子容器
-  var threadContainer = (ctx) => {
+  const threadContainer = (ctx) => {
     // 处理 meta
     const { forumid, threadid, content } = ctx
     const timePublish =
@@ -121,7 +121,7 @@ mw.hook('WikiForum.theme').add((next) => {
     } else {
       // 普通帖子
       const { $root, $container, forumid, _forum, fn } = ctx
-      var $replyArea = newReplyArea({
+      const $replyArea = newReplyArea({
         $root,
         $container,
         forumEl: _forum,
@@ -129,25 +129,28 @@ mw.hook('WikiForum.theme').add((next) => {
         threadid,
         fn,
       })
+      const $replyContainer = $('<div>', {
+        class: 'new-reply-container',
+      }).append(
+        $('<div>', { class: 'modify-buttons-group' }).append(
+          $('<a>', {
+            class: 'reply-btn',
+            href: 'javascript:;',
+            text: _msg('reply-btn'),
+          }).click(function() {
+            $replyArea.show()
+            $(this).hide()
+          })
+        ),
+        $replyArea
+      )
 
       return $('<div>', { class: 'forum-thread', id: htmlId }).append(
         $('<div>', { class: 'forum-before' }).append($idLink, $userLink),
         $content,
         $('<div>', { class: 'forum-after' }).append(
           $timeArea,
-          $('<div>', { class: 'new-reply-container' }).append(
-            $('<div>', { class: 'modify-buttons-group' }).append(
-              $('<a>', {
-                class: 'reply-btn',
-                href: 'javascript:;',
-                text: _msg('reply-btn'),
-              }).click(function() {
-                $replyArea.show()
-                $(this).hide()
-              })
-            ),
-            $replyArea
-          ),
+          ctx.isComplex ? null : $replyContainer,
           reactionContainer(ctx)
         )
       )
@@ -155,7 +158,7 @@ mw.hook('WikiForum.theme').add((next) => {
   }
 
   // 新回复容器
-  var newReplyArea = (ctx) => {
+  const newReplyArea = (ctx) => {
     const { $root, forumEl, forumid, threadid } = ctx
 
     var $container = $('<div>', {
@@ -190,7 +193,7 @@ mw.hook('WikiForum.theme').add((next) => {
   }
 
   // 新帖子容器
-  var newThreadArea = (ctx) => {
+  const newThreadArea = (ctx) => {
     const { $root, _forum, forumid } = ctx
 
     var $container = $('<div>', {

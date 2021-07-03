@@ -129,6 +129,7 @@ function renderThread(ctx) {
     threadid,
     meta,
     content,
+    isComplex: isComplex(threadid, forumMeta.depthMax),
     fn,
   })
 
@@ -141,6 +142,12 @@ function renderThread(ctx) {
   }
 
   return $thread
+}
+
+function isComplex(id, depthMax = 3) {
+  id = id.split('-')
+  if (id.length > depthMax) return true
+  return false
 }
 
 const fn = {
@@ -195,4 +202,5 @@ module.exports = {
   fromPage,
   getContent,
   getMeta,
+  isComplex,
 }

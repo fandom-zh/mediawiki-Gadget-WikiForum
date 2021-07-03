@@ -69,7 +69,7 @@ function parseAllForums(forumEl) {
  - WikiForum Container
  - 
  - Total Forums: ${forumEl.length}
- - Last modiflied: ${timeStamp()}
+ - Last modified: ${timeStamp()}
  - Last user: ${conf.wgUserName}
  -
  - DO NOT EDIT DIRECTLY
@@ -157,13 +157,6 @@ function getMeta(meta) {
 
 function timeStamp() {
   return new Date().toISOString()
-}
-
-// eslint-disable-next-line no-unused-vars
-function isComplex(id, depthMax) {
-  id = id.split('-')
-  if (id.length > depthMax) return true
-  return false
 }
 
 function updateThread({
